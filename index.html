@@ -1,0 +1,2768 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="Prototype d'outil de gestion pour une structure d'aide à domicile.">
+</head>
+<body>
+<title>Tandem Planning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&display=swap">
+
+<style>
+/* ============================================================
+   TANDEM — POC outil de gestion aide à domicile
+   Tokens : light complet sur :root, redéfinis pour les 3 états
+   ============================================================ */
+:root{
+  --ground:#F4F4F3;
+  --surface:#FFFFFF;
+  --surface-sunk:#EAEAE9;
+  --surface-alt:#FAFAFA;
+  --ink:#131313;
+  --navy:#1C2B4A;
+  --navy-hover:#27395E;
+  --ink-2:#545453;
+  --ink-3:#8E8E8C;
+  --line:#E6E6E4;
+  --line-soft:#EFEFED;
+  --line-strong:#D2D2D0;
+
+  /* sémantique : utilisée en filet, point ou texte — jamais en aplat */
+  --danger:#A63B2E;
+  --warn:#8A6412;
+  --info:#35577F;
+  --ok:#2C6A4E;
+
+  --shadow-sm:none;
+  --shadow-md:0 2px 10px rgba(20,19,15,.05);
+  --shadow-lg:0 18px 48px rgba(20,19,15,.14);
+
+  --r-sm:7px; --r-md:11px; --r-lg:14px; --r-xl:16px;
+  --sans:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --display:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--sans); font-size:13.5px; line-height:1.5; letter-spacing:-.008em;
+  -webkit-font-smoothing:antialiased;
+}
+button{font-family:inherit; font-size:inherit; color:inherit; cursor:pointer; border:0; background:none}
+:focus-visible{outline:2px solid var(--navy); outline-offset:2px; border-radius:6px}
+h1,h2,h3,h4{font-family:var(--display); font-weight:600; margin:0; text-wrap:balance; letter-spacing:-.03em}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- shell ---------- */
+.app{display:grid; grid-template-columns:248px 1fr; min-height:100vh}
+.sidebar{
+  background:var(--surface); border-right:1px solid var(--line);
+  display:flex; flex-direction:column; gap:4px; padding:22px 14px;
+  position:sticky; top:0; height:100vh;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:0 8px 22px}
+.brand-name{font-family:var(--display); font-weight:600; font-size:17px; letter-spacing:-.03em}
+
+.navitem{
+  display:flex; align-items:center; gap:11px; width:100%;
+  padding:8px 11px; border-radius:var(--r-sm); color:var(--ink-2); font-weight:500;
+  transition:background .14s, color .14s;
+}
+.navitem svg{flex:none; opacity:.85}
+.navitem:hover{background:var(--surface-alt); color:var(--ink)}
+.navitem[aria-current="true"],
+.navitem[aria-current="true"]:hover{background:var(--navy); color:#fff; font-weight:600}
+.navitem[aria-current="true"] svg{opacity:1}
+.navbadge{
+  margin-left:auto; font-size:11px; font-weight:700; padding:1px 6px; border-radius:4px;
+  background:var(--surface-sunk); color:var(--ink-2);
+}
+.navitem[aria-current="true"] .navbadge{background:rgba(255,255,255,.18); color:var(--surface)}
+.navbadge.hot{background:var(--danger); color:#fff}
+.navitem[aria-current="true"] .navbadge.hot{background:var(--danger); color:#fff}
+.navgroup-label{
+  font-size:10px; font-weight:700; letter-spacing:.11em; text-transform:uppercase;
+  color:var(--ink-3); padding:18px 11px 7px;
+}
+
+/* ---------- main ---------- */
+.main{min-width:0; display:flex; flex-direction:column}
+.topbar{
+  display:flex; align-items:flex-end; gap:20px; padding:26px 30px 0; flex-wrap:wrap;
+}
+.eyebrow{font-size:10.5px; letter-spacing:.11em; text-transform:uppercase; color:var(--ink-3); font-weight:700}
+.topbar h1{font-size:29px; font-weight:600; margin-top:3px; letter-spacing:-.035em}
+.topbar-actions{margin-left:auto; display:flex; gap:8px; align-items:center}
+.segbar{display:flex; align-items:stretch; border:1px solid var(--line-strong); border-radius:var(--r-sm); background:var(--surface); overflow:hidden}
+.segbar .btn{border:0; border-radius:0; min-height:34px; background:transparent}
+.segbar .btn:hover{background:var(--surface-sunk)}
+.segbar .btn:disabled{opacity:.3; cursor:default; background:transparent}
+.seglabel{
+  display:flex; align-items:center; gap:7px; padding:0 14px; font-size:13px; font-weight:600;
+  border-left:1px solid var(--line); border-right:1px solid var(--line); white-space:nowrap;
+}
+.seglabel svg{color:var(--ink-3)}
+
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  padding:8px 14px; border-radius:var(--r-sm); min-height:36px;
+  font-weight:600; font-size:13px; border:1px solid var(--line-strong); background:var(--surface);
+  transition:background .14s, border-color .14s;
+}
+.btn:hover{background:var(--surface-alt); border-color:var(--ink-3)}
+.btn.dark{background:var(--navy); color:#fff; border-color:var(--navy)}
+.btn.dark:hover{background:var(--navy-hover); border-color:var(--navy-hover)}
+.btn.icon{padding:8px 10px}
+
+.viewport{padding:22px 30px 60px; min-width:0}
+.viewport:has(#view-planning.on){padding-bottom:26px}
+.view{display:none}
+.view.on{display:block; animation:rise .32s cubic-bezier(.22,.8,.3,1) both}
+@keyframes rise{from{opacity:.4; transform:translateY(8px)} to{opacity:1; transform:none}}
+
+/* ---------- toolbar pills ---------- */
+.toolbar{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:16px}
+.pill{
+  display:inline-flex; align-items:center; gap:7px; padding:8px 13px; border-radius:var(--r-sm);
+  min-height:36px; background:var(--surface); border:1px solid var(--line);
+  font-size:13px; font-weight:600; color:var(--ink-2);
+}
+.pill:hover{border-color:var(--ink-3)}
+.pill[aria-pressed="true"]{background:var(--navy); color:#fff; border-color:var(--navy)}
+.pill .cnt{font-size:11px; font-weight:700; background:var(--surface-sunk); color:var(--ink-2); padding:1px 6px; border-radius:4px}
+.pill[aria-pressed="true"] .cnt{background:rgba(255,255,255,.2); color:var(--surface)}
+/* combobox intervenante */
+.combo{position:relative}
+.combobtn{
+  display:inline-flex; align-items:center; gap:9px; min-height:36px; padding:0 11px; width:212px;
+  border:1px solid var(--line-strong); border-radius:var(--r-sm); background:var(--surface);
+  font-size:13px; font-weight:600; text-align:left; transition:border-color .14s;
+}
+.combobtn:hover{border-color:var(--ink-3)}
+.combo.open .combobtn{border-color:var(--navy)}
+.combobtn > span{flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.combobtn .chev{color:var(--ink-3); flex:none; transition:transform .16s}
+.combo.open .combobtn .chev{transform:rotate(180deg)}
+.combopop{
+  position:absolute; top:calc(100% + 5px); left:0; z-index:20; width:290px;
+  background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-md);
+  box-shadow:0 10px 32px rgba(20,19,15,.13); overflow:hidden;
+  animation:popdown .14s cubic-bezier(.2,.9,.3,1) both;
+}
+@keyframes popdown{from{opacity:0; transform:translateY(-4px)} to{opacity:1; transform:none}}
+.combosearch{display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid var(--line)}
+.combosearch svg{color:var(--ink-3); flex:none}
+.combosearch input{
+  border:0; background:none; font-family:inherit; font-size:13px; color:var(--ink);
+  outline:none; width:100%; padding:0;
+}
+.combolist{max-height:296px; overflow-y:auto; padding:5px}
+.copt{
+  display:flex; align-items:center; gap:9px; width:100%; padding:7px 8px;
+  border-radius:var(--r-sm); text-align:left; transition:background .1s;
+}
+
+.copt b{font-size:12.5px; font-weight:600; display:block; line-height:1.25}
+.copt small{font-size:10.5px; color:var(--ink-3); font-weight:600}
+.copt .tick{margin-left:auto; color:var(--ink); flex:none; opacity:0}
+.copt[aria-selected="true"] .tick{opacity:1}
+.copt[aria-selected="true"] b{font-weight:700}
+.comboempty{padding:22px 12px; text-align:center; font-size:12px; color:var(--ink-3); font-weight:600}
+.combosep{font-size:9.5px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3); padding:9px 8px 4px}
+
+/* le planning occupe toute la hauteur utile */
+#view-planning.on{display:flex; flex-direction:column; min-height:calc(100vh - 182px)}
+#view-planning .cal{flex:1; min-height:0; display:flex; flex-direction:column}
+#view-planning .calscroll{flex:1; min-height:0; max-height:none}
+
+/* ---------- vue calendaire ---------- */
+.cal{--hour:38px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); overflow:hidden}
+.calhead{
+  display:grid; grid-template-columns:54px repeat(7,minmax(0,1fr));
+  border-bottom:1px solid var(--line); background:var(--surface);
+}
+.calhead > div{padding:9px 12px 10px; border-left:1px solid var(--line-soft)}
+.calhead > div:first-child{border-left:0}
+.calhead .dow{font-size:9.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3)}
+.calhead .dnum{font-family:var(--display); font-size:15px; font-weight:600; letter-spacing:-.03em; line-height:1.2; margin-top:1px}
+.calhead .today .dow, .calhead .today .dnum{color:var(--navy)}
+
+.calscroll{max-height:min(66vh,720px); overflow-y:auto; overflow-x:hidden}
+.calbody{display:grid; grid-template-columns:54px repeat(7,minmax(0,1fr))}
+.calgutter{position:relative}
+.calgutter span{
+  position:absolute; right:9px; transform:translateY(-50%);
+  font-size:10px; font-weight:600; color:var(--ink-3); font-variant-numeric:tabular-nums;
+}
+.calday{
+  position:relative; border-left:1px solid var(--line-soft);
+  background-image:linear-gradient(to bottom, var(--line-soft) 1px, transparent 1px);
+  background-size:100% var(--hour);
+}
+.calday.today{background-color:rgba(28,43,74,.03)}
+.calday.drop{background-color:var(--surface-sunk); box-shadow:inset 0 0 0 1px var(--navy)}
+.calday.off .offlbl{
+  position:absolute; inset:8px 4px; border-radius:var(--r-sm); border:1px dashed var(--line-strong);
+  display:flex; align-items:center; justify-content:center; text-align:center; padding:8px;
+  font-size:10.5px; font-weight:600; color:var(--ink-3); line-height:1.35;
+}
+.now{position:absolute; left:0; right:0; height:1px; background:var(--danger); z-index:3}
+.now::before{content:""; position:absolute; left:-3px; top:-2.5px; width:6px; height:6px; border-radius:50%; background:var(--danger)}
+
+/* ---------- blocs d'intervention ---------- */
+.vac{
+  position:absolute; left:4px; right:4px; overflow:hidden; cursor:grab; text-align:left;
+  border-radius:8px; padding:5px 8px 5px 9px;
+  background:#EDEFF4; border:1px solid transparent; border-left:3px solid var(--navy);
+  transition:box-shadow .12s;
+}
+.vac:hover{box-shadow:0 2px 8px rgba(20,19,15,.12)}
+.vac:active{cursor:grabbing}
+.vac.dragging{opacity:.35}
+.vac .t{
+  font-size:9.5px; font-weight:700; color:#5A6885; font-variant-numeric:tabular-nums;
+  display:block; line-height:1.3; white-space:nowrap;
+}
+.vac .n{font-size:12px; font-weight:600; color:var(--navy); display:block; line-height:1.3; letter-spacing:-.015em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.vac .p{font-size:10px; font-weight:500; color:#5A6885; display:block; line-height:1.3; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.vac.nuit{background:var(--navy); border-left-color:#0E1729}
+.vac.nuit .t, .vac.nuit .p{color:rgba(255,255,255,.62)}
+.vac.nuit .n{color:#fff}
+.vac.tofill{background:transparent; border:1px dashed var(--danger); border-left:3px solid var(--danger)}
+.vac.tofill .t, .vac.tofill .p{color:var(--ink-3)}
+.vac.tofill .n{color:var(--danger)}
+.blocked{
+  position:absolute; left:4px; right:4px; overflow:hidden; border-radius:8px; padding:6px 8px;
+  font-size:10px; font-weight:600; line-height:1.3; color:var(--ink-3); border:1px dashed var(--line-strong);
+  background-image:repeating-linear-gradient(45deg, transparent 0 6px, var(--surface-sunk) 6px 12px);
+}
+
+/* ---------- résumé intervenante ou famille ---------- */
+.whobar{display:flex; align-items:center; gap:9px; margin-left:auto; font-size:12px; font-weight:600; white-space:nowrap}
+.whobar .over{color:var(--warn)}
+.whobar .sep{color:var(--ink-3); font-weight:500}
+.contract{
+  font-size:9.5px; font-weight:800; letter-spacing:.06em; padding:1px 6px; border-radius:4px;
+  background:var(--surface-sunk); color:var(--ink-2); border:1px solid transparent; white-space:nowrap;
+}
+.contract.cdd{background:transparent; border-color:var(--line-strong); color:var(--ink-2)}
+.contract.interim{background:transparent; border-style:dashed; border-color:var(--line-strong); color:var(--ink-2)}
+
+/* ---------- tableau de bord ---------- */
+.tiles{
+  display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); margin-top:20px;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden;
+}
+@media(max-width:860px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{padding:17px 24px; border-left:1px solid var(--line); min-width:0}
+.tile:nth-child(3n+1){border-left:0}
+.tile:nth-child(n+4){border-top:1px solid var(--line)}
+.tile .lb{font-size:10px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3); white-space:nowrap}
+.tile .v{font-family:var(--display); font-size:27px; font-weight:600; letter-spacing:-.04em; line-height:1.15; margin-top:6px}
+.tile .v small{font-size:14px; font-weight:600; color:var(--ink-3); letter-spacing:0}
+.tile .sub{font-size:11px; font-weight:500; color:var(--ink-3); margin-top:3px; white-space:nowrap}
+.tile.alert .v{color:var(--danger)}
+
+.chartbox{margin-top:26px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); padding:18px 20px 12px}
+.charthead{display:flex; align-items:baseline; gap:12px; margin-bottom:6px}
+.charthead h2{font-size:15px; font-weight:600}
+.charthead .cnt{margin-left:auto; font-size:12px; font-weight:600; color:var(--ink-3)}
+.chartbox svg{display:block; width:100%; height:auto; overflow:visible}
+#dashChart, #occChart{position:relative}
+.charttip{
+  position:absolute; transform:translate(-50%,-145%); background:var(--navy); color:#fff;
+  padding:6px 10px 7px; border-radius:7px; white-space:nowrap; pointer-events:none;
+  box-shadow:0 4px 14px rgba(20,19,15,.2); text-align:center;
+}
+.charttip b{display:block; font-size:10px; font-weight:600; opacity:.6; letter-spacing:.04em; text-transform:uppercase}
+.charttip span{font-size:13.5px; font-weight:700; font-variant-numeric:tabular-nums}
+.pt{transition:r .12s, fill .12s}
+#dashTodo{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden}
+.todo{
+  display:flex; align-items:center; gap:13px; width:100%; text-align:left;
+  padding:14px 18px 14px 16px; border-bottom:1px solid var(--line-soft); border-left:2px solid var(--line-strong);
+  transition:background .12s;
+}
+.todo:last-child{border-bottom:0}
+.todo:hover{background:var(--surface-alt)}
+.todo.danger{border-left-color:var(--danger)}
+.todo.warn{border-left-color:var(--warn)}
+.todo b{font-size:13px; font-weight:600; display:block}
+.todo small{font-size:11.5px; color:var(--ink-3); font-weight:500}
+.todo .go{margin-left:auto; color:var(--ink-3); flex:none}
+
+/* ---------- capacité ---------- */
+.kpi1{margin-top:20px; display:flex; align-items:center; gap:16px}
+.kpi1 .n{font-family:var(--display); font-size:34px; font-weight:600; letter-spacing:-.04em; line-height:1; white-space:nowrap}
+.kpi1 .lb{font-size:12.5px; font-weight:600; color:var(--ink-2); line-height:1.35}
+.kpi1 .lb small{display:block; font-size:11.5px; font-weight:500; color:var(--ink-3); margin-top:2px}
+.occ{display:flex; align-items:center; gap:10px}
+.occ .bar{flex:1; height:6px; border-radius:6px; background:var(--surface-sunk); overflow:hidden; min-width:50px}
+.occ .bar i{display:block; height:100%; background:var(--navy); border-radius:6px}
+.occ .bar i.low{background:var(--warn)}
+.occ .bar i.high{background:var(--danger)}
+.occ .pc{font-size:12.5px; font-weight:700; font-variant-numeric:tabular-nums; width:42px; text-align:right}
+
+/* ---------- affectation ---------- */
+.assign{display:grid; grid-template-columns:minmax(0,350px) minmax(0,1fr); gap:30px; align-items:start; margin-top:20px}
+@media(max-width:980px){.assign{grid-template-columns:1fr}}
+.colttl{
+  display:flex; align-items:center; gap:8px; font-size:10px; font-weight:800; letter-spacing:.09em;
+  text-transform:uppercase; color:var(--ink-3); padding-bottom:11px; border-bottom:1px solid var(--line);
+}
+.colttl span{margin-left:auto; letter-spacing:0; font-size:11px; color:var(--danger)}
+.need-row{
+  display:flex; align-items:center; gap:12px; width:100%; text-align:left;
+  padding:12px 12px 12px 11px; border-bottom:1px solid var(--line-soft);
+  border-left:2px solid var(--danger); background:transparent; transition:background .12s;
+}
+.need-row:hover{background:rgba(0,0,0,.02)}
+.need-row[aria-selected="true"]{background:var(--surface); border-left-color:var(--navy); box-shadow:inset 0 0 0 1px var(--line)}
+.need-row .when{font-size:11px; font-weight:700; color:var(--ink-3); width:82px; flex:none; font-variant-numeric:tabular-nums}
+.need-row b{font-size:13px; font-weight:600; display:block; line-height:1.3}
+.need-row small{font-size:11px; color:var(--ink-3); font-weight:500}
+.asgempty{padding:34px 0; font-size:12.5px; font-weight:600; color:var(--ink-3); text-align:center}
+.cand{display:flex; align-items:center; gap:12px; padding:13px 0; border-bottom:1px solid var(--line-soft)}
+.cand b{font-size:13px; font-weight:600; display:block; line-height:1.3}
+.cand small{font-size:11px; color:var(--ink-3); font-weight:500}
+.cand .why{margin-left:auto; text-align:right; font-size:11.5px; font-weight:600; max-width:260px; color:var(--ink-2)}
+.cand .why em{font-style:normal; display:block; font-size:10.5px; color:var(--ink-3); font-weight:500; margin-top:1px}
+.cand.no{opacity:.5}
+.cand .btn{margin-left:14px; padding:6px 13px; min-height:30px; font-size:12px; font-weight:600}
+
+/* ---------- table personnel ---------- */
+.tablewrap{background:transparent; border-top:1px solid var(--line); overflow:hidden}
+.tscroll{overflow-x:auto}
+.tbl{border-collapse:collapse; width:100%; min-width:720px; table-layout:fixed}
+.tbl th{
+  text-align:left; font-size:10px; font-weight:800; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ink-3); padding:12px 16px; border-bottom:1px solid var(--line); background:transparent; white-space:nowrap;
+}
+.tbl th:first-child, .tbl td:first-child{padding-left:0}
+.tbl td{padding:14px 16px; border-bottom:1px solid var(--line-soft); vertical-align:middle; font-size:12.5px}
+.tbl tr:last-child td{border-bottom:0}
+.tbl tbody tr{transition:background .12s}
+.tbl tbody tr:hover{background:rgba(0,0,0,.016)}
+.tbl tr.off td{opacity:.55}
+.pname{display:flex; align-items:center; gap:11px; min-width:0}
+.pname .pid{min-width:0}
+.pname b{font-size:13.5px; font-weight:600; display:flex; align-items:center; gap:7px; line-height:1.3; white-space:nowrap}
+.pname small{font-size:11px; color:var(--ink-3); font-weight:500; white-space:nowrap}
+.tbl td.muted{color:var(--ink-2); font-weight:500}
+.tbl td .sub{display:block; font-size:10.5px; color:var(--ink-3); font-weight:600}
+.tbl td{white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.tbl td.actcell{overflow:visible}
+.paytotal td{border-top:1px solid var(--line-strong); border-bottom:0; font-weight:700; padding-top:14px}
+.csv{
+  margin:0; padding:13px; border:1px solid var(--line); border-radius:var(--r-sm);
+  background:var(--surface-alt); font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+  font-size:11px; line-height:1.7; overflow-x:auto; white-space:pre; color:var(--ink-2);
+}
+.rowacts .btn{
+  padding:6px 14px; min-height:30px;
+  font-size:12px; font-weight:600; line-height:1.3; letter-spacing:0;
+}
+.tbl .over{color:var(--warn)}
+.tbl td.delai{font-weight:600}
+.tbl td.delai.warn{color:var(--warn)}
+.tbl td.delai.danger{color:var(--danger)}
+.tbl td.delai.muted{color:var(--ink-3); font-weight:500}
+.ech{font-size:12px; font-weight:600; line-height:1.3; color:var(--ink-2)}
+.ech small{display:block; font-size:10.5px; font-weight:600; color:var(--ink-3)}
+.tbl tr.clickrow{cursor:pointer}
+.tbl tr.clickrow:focus-visible{outline:2px solid var(--navy); outline-offset:-2px}
+
+/* ---------- kanban ---------- */
+.kb{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; align-items:start}
+@media(max-width:1200px){.kb{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:820px){.kb{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.col{background:var(--surface-alt); border:1px solid var(--line); border-radius:var(--r-lg); padding:10px; min-height:280px; min-width:0; transition:background .14s}
+.col.lost{background:transparent; border-style:dashed}
+.lead.lost{opacity:.62}
+.lostwhy{font-size:10.5px; font-weight:600; color:var(--ink-3); margin-top:7px}
+.col.drop{background:var(--surface-sunk); box-shadow:inset 0 0 0 1px var(--navy)}
+.colhead{display:flex; flex-direction:column; gap:1px; padding:4px 6px 12px}
+.colhead b{font-size:13px; font-weight:600; letter-spacing:-.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.colhead .meta{font-size:10.5px; font-weight:600; color:var(--ink-3); white-space:nowrap}
+.lead{
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); padding:11px 12px;
+  margin-bottom:9px; cursor:grab; transition:transform .12s, box-shadow .12s;
+}
+.lead{min-width:0; cursor:pointer}
+.lead:focus-visible{outline:2px solid var(--navy); outline-offset:2px}
+.lead:hover{border-color:var(--line-strong); box-shadow:var(--shadow-md)}
+.lead.dragging{opacity:.4}
+.lead b{font-size:13.5px; font-weight:600; letter-spacing:-.02em; display:block; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.lead .need{
+  font-size:11.5px; color:var(--ink-3); margin-top:2px; font-weight:500;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.lead .foot{display:flex; align-items:center; margin-top:9px}
+.lead .hrs{font-size:12px; font-weight:700; white-space:nowrap; letter-spacing:-.01em}
+
+/* ---------- intégrations ---------- */
+.integs{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px}
+@media(max-width:900px){.integs{grid-template-columns:1fr}}
+.integ{
+  display:flex; align-items:center; gap:13px; padding:15px;
+  border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface);
+}
+.integ .mark{
+  width:38px; height:38px; border-radius:var(--r-sm); flex:none; display:grid; place-items:center;
+  border:1px solid var(--line); background:var(--surface-alt); color:var(--ink);
+}
+.integ .body{flex:1; min-width:0}
+.integ .body b{font-size:13.5px; font-weight:600; display:block}
+.integ .body small{font-size:11.5px; color:var(--ink-3); font-weight:500; display:block; margin-top:1px}
+.switch{
+  width:40px; height:23px; border-radius:99px; flex:none; position:relative;
+  background:var(--surface-sunk); border:1px solid var(--line-strong);
+  transition:background .16s, border-color .16s;
+}
+.switch:hover{border-color:var(--ink-3)}
+.switch i{
+  position:absolute; top:2px; left:2px; width:17px; height:17px; border-radius:50%;
+  background:var(--surface); box-shadow:0 1px 2px rgba(20,19,15,.25); transition:transform .16s;
+}
+.switch[aria-checked="true"]{background:var(--navy); border-color:var(--navy)}
+.switch[aria-checked="true"]:hover{background:var(--navy-hover); border-color:var(--navy-hover)}
+.switch[aria-checked="true"] i{transform:translateX(17px)}
+
+/* ---------- modal verdict ---------- */
+.scrim{
+  position:fixed; inset:0; background:rgba(22,21,15,.42); backdrop-filter:blur(3px);
+  display:none; place-items:center; z-index:50; padding:20px;
+}
+.scrim.on{display:grid}
+.modal{
+  background:var(--surface); border-radius:var(--r-xl); max-width:520px; width:100%;
+  box-shadow:var(--shadow-lg); overflow:hidden; animation:pop .22s cubic-bezier(.2,.9,.3,1) both;
+}
+@keyframes pop{from{opacity:0; transform:translateY(14px) scale(.97)} to{opacity:1; transform:none}}
+.mhead{padding:20px 22px 16px; border-bottom:1px solid var(--line)}
+.mhead .verdict{font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase}
+.mhead h3{font-size:20px; font-weight:700; margin-top:4px}
+.mhead p{margin:5px 0 0; font-size:13px; color:var(--ink-2)}
+.mbody{padding:16px 22px; display:flex; flex-direction:column; gap:9px; max-height:46vh; overflow-y:auto}
+.check{
+  display:flex; gap:11px; padding:2px 0 12px 14px; border:0; border-left:2px solid var(--line-strong);
+  background:transparent; border-radius:0;
+}
+.check.red{border-left-color:var(--danger)}
+.check.orange{border-left-color:var(--warn)}
+.check.blue{border-left-color:var(--info)}
+.check.green{border-left-color:var(--ok)}
+.check b{font-size:13px; font-weight:700; display:block}
+.check .rule{font-size:10.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; opacity:.6}
+.check p{margin:3px 0 0; font-size:12.5px; line-height:1.45}
+.mfoot{padding:15px 22px 20px; border-top:1px solid var(--line); display:flex; gap:9px; align-items:center; background:var(--surface-alt)}
+.mfoot .btn{flex:none}
+.just{width:100%; font-family:inherit; font-size:13px; padding:11px 13px; border-radius:var(--r-sm); border:1px solid var(--line-strong); background:var(--surface); color:var(--ink); resize:vertical; min-height:62px}
+.formfield{display:flex; flex-direction:column; gap:5px}
+.formfield span{font-size:10px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3)}
+.formfield input, .formfield select{
+  font-family:inherit; font-size:13.5px; font-weight:500; color:var(--ink);
+  padding:10px 12px; border-radius:var(--r-sm); border:1px solid var(--line-strong);
+  background:var(--surface); width:100%;
+}
+.formfield input:focus, .formfield select:focus{outline:2px solid var(--navy); outline-offset:-1px}
+.just:focus{outline:2px solid var(--navy); outline-offset:-1px}
+
+.toast{
+  position:fixed; bottom:22px; left:50%; transform:translate(-50%,90px);
+  background:var(--navy); color:#fff; padding:12px 18px; border-radius:var(--r-sm);
+  font-size:13px; font-weight:600; box-shadow:var(--shadow-lg); z-index:60; transition:transform .3s cubic-bezier(.2,.9,.3,1);
+  display:flex; align-items:center; gap:9px;
+}
+.toast.on{transform:translate(-50%,0)}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms !important; transition-duration:.01ms !important}
+}
+</style>
+
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div>
+        <div class="brand-name">Nena Adom</div>
+      </div>
+    </div>
+
+    <div class="navgroup-label">Exploitation</div>
+    <button class="navitem" data-view="dashboard" aria-current="true">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      Tableau de bord
+    </button>
+    <button class="navitem" data-view="planning">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+      Planning
+    </button>
+    <button class="navitem" data-view="affectation">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 7h9M3.5 12h6M3.5 17h9"/><path d="M15.5 12.5l2.5 2.5 4.5-5"/></svg>
+      Affectation
+      <span class="navbadge hot" id="nb-fill">8</span>
+    </button>
+
+    <div class="navgroup-label">Bénéficiaires</div>
+    <button class="navitem" data-view="familles">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V9.5L12 4l8 5.5V21"/><path d="M9.5 21v-6h5v6"/></svg>
+      Familles
+    </button>
+
+    <div class="navgroup-label">Ressources humaines</div>
+    <button class="navitem" data-view="absences">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v9l5 3"/><circle cx="12" cy="12" r="9"/></svg>
+      Absences
+      <span class="navbadge hot">3</span>
+    </button>
+    <button class="navitem" data-view="personnel">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 5.5a3 3 0 010 5.4M17.5 20a6 6 0 00-2-4.2"/></svg>
+      Personnel
+    </button>
+    <button class="navitem" data-view="contrats">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
+      Contrats
+    </button>
+    <button class="navitem" data-view="paie">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M7 9h10M7 13h10M7 17h5"/></svg>
+      Préparation de paie
+    </button>
+    <button class="navitem" data-view="capacite">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+      Occupation
+    </button>
+
+    <div class="navgroup-label">Réseau</div>
+    <button class="navitem" data-view="partenaires">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11a3 3 0 100-6 3 3 0 000 6zM17 19a3 3 0 100-6 3 3 0 000 6z"/><path d="M9.5 9.5l5 5"/></svg>
+      Partenaires
+    </button>
+
+    <div class="navgroup-label">Développement</div>
+    <button class="navitem" data-view="prospects">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="5" height="16" rx="2"/><rect x="10" y="4" width="5" height="11" rx="2"/><rect x="17" y="4" width="4" height="7" rx="2"/></svg>
+      Prospects
+    </button>
+    <button class="navitem" data-view="recrutement">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M19 8v6M22 11h-6"/></svg>
+      Recrutement
+    </button>
+
+    <div class="navgroup-label">Paramètres</div>
+    <button class="navitem" data-view="integrations">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 7l3-3 3 3-3 3M10 17l-3 3-3-3 3-3"/><rect x="8" y="8" width="8" height="8" rx="2"/></svg>
+      Intégrations
+    </button>
+
+
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <div class="eyebrow" id="crumb">Exploitation</div>
+        <h1 id="vtitle">Planning de la semaine</h1>
+      </div>
+      <div class="topbar-actions">
+        <div class="segbar" id="weekNav">
+          <button class="btn icon" id="prevWeek" aria-label="Semaine précédente">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+          </button>
+          <span class="seglabel">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+            21 – 27 septembre 2026
+          </span>
+          <button class="btn icon" id="nextWeek" aria-label="Semaine suivante">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="viewport">
+
+      <!-- =================== TABLEAU DE BORD =================== -->
+      <section class="view on" id="view-dashboard">
+        <div class="tiles" id="dashTiles"></div>
+        <div class="chartbox">
+          <div class="charthead">
+            <h2>Heures réalisées</h2>
+            <span class="cnt" id="ytdLabel"></span>
+          </div>
+          <div id="dashChart"></div>
+        </div>
+        <div class="chartbox">
+          <div class="charthead">
+            <h2>Taux d'occupation</h2>
+            <span class="cnt" id="occLabel"></span>
+          </div>
+          <div id="occChart"></div>
+        </div>
+        <div class="colttl" style="margin-top:28px">À traiter</div>
+        <div id="dashTodo"></div>
+      </section>
+
+      <!-- =================== PLANNING =================== -->
+      <section class="view" id="view-planning">
+        <div class="toolbar" style="margin-top:20px">
+          <div class="combo" id="staffCombo">
+            <button class="combobtn" id="comboBtn" aria-haspopup="listbox" aria-expanded="false">
+              <span id="comboLabel">Awa Traoré</span>
+              <svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <div class="combopop" id="comboPop" role="listbox" aria-label="Intervenantes et familles" hidden>
+              <div class="combosearch">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                <input id="comboSearch" type="text" placeholder="Rechercher une intervenante ou une famille…" autocomplete="off">
+              </div>
+              <div class="combolist" id="comboList"></div>
+            </div>
+          </div>
+          <div class="whobar" id="whobar"></div>
+        </div>
+
+        <div class="cal">
+          <div class="calhead" id="calHead"></div>
+          <div class="calscroll" id="calScroll"><div class="calbody" id="calBody"></div></div>
+        </div>
+      </section>
+
+      <!-- =================== AFFECTATION =================== -->
+      <section class="view" id="view-affectation">
+        <div class="assign">
+          <div>
+            <div class="colttl">Interventions à pourvoir <span id="asgCount"></span></div>
+            <div id="asgList"></div>
+          </div>
+          <div>
+            <div class="colttl" id="asgHead">Personnel disponible</div>
+            <div id="asgCands"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================== ABSENCES =================== -->
+      <section class="view" id="view-absences">
+        <div class="toolbar" style="margin-top:20px">
+          <button class="pill" aria-pressed="true">En attente <span class="cnt">3</span></button>
+          <button class="pill">Validées</button>
+          <button class="pill">Refusées</button>
+        </div>
+
+        <div class="tablewrap">
+          <div class="tscroll">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th style="width:26%">Intervenante</th>
+                  <th style="width:17%">Motif</th>
+                  <th style="width:20%">Période</th>
+                  <th style="width:14%">Durée</th>
+                  <th style="width:23%"></th>
+                </tr>
+              </thead>
+              <tbody id="pending"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================== FAMILLES =================== -->
+      <section class="view" id="view-familles">
+        <div class="toolbar" style="margin-top:20px">
+          <button class="btn dark" style="margin-left:auto" onclick="toast('Ouverture de dossier — hors périmètre du POC')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Ouvrir un dossier
+          </button>
+        </div>
+
+        <div class="tablewrap">
+          <div class="tscroll">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th style="width:23%">Bénéficiaire</th>
+                  <th style="width:13%">Plan d'aide</th>
+                  <th style="width:22%">Prestations</th>
+                  <th style="width:20%">Adresse</th>
+                  <th style="width:22%">Intervenantes</th>
+                </tr>
+              </thead>
+              <tbody id="famBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================== PERSONNEL =================== -->
+      <section class="view" id="view-personnel">
+        <div class="toolbar" style="margin-top:20px">
+          <button class="pill" data-filter="tous" aria-pressed="true">Tous <span class="cnt">12</span></button>
+          <button class="pill" data-filter="CDI">CDI</button>
+          <button class="pill" data-filter="CDD">CDD</button>
+          <button class="pill" data-filter="Intérim">Intérim</button>
+          <button class="pill" data-filter="alerte">Échéance à traiter</button>
+          <button class="btn dark" style="margin-left:auto" onclick="toast('Formulaire d\'embauche — hors périmètre du POC')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Ajouter une intervenante
+          </button>
+        </div>
+
+        <div class="tablewrap">
+          <div class="tscroll">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th style="width:24%">Intervenante</th>
+                  <th style="width:11%">Contrat</th>
+                  <th style="width:15%">Charge</th>
+                  <th style="width:20%">Habilitations</th>
+                  <th style="width:30%">Familles</th>
+                </tr>
+              </thead>
+              <tbody id="staffBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================== CONTRATS =================== -->
+      <section class="view" id="view-contrats">
+        <div class="toolbar" style="margin-top:20px">
+          <button class="pill" data-ct="tous" aria-pressed="true">Toutes les échéances</button>
+          <button class="pill" data-ct="fin">Fins de contrat</button>
+          <button class="pill" data-ct="essai">Périodes d'essai</button>
+          <button class="pill" data-ct="debut">Prises de poste</button>
+        </div>
+
+        <div class="tablewrap">
+          <div class="tscroll">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th style="width:18%">Échéance</th>
+                  <th style="width:26%">Nature</th>
+                  <th style="width:28%">Intervenante</th>
+                  <th style="width:14%">Contrat</th>
+                  <th style="width:14%">Délai</th>
+                </tr>
+              </thead>
+              <tbody id="ctBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================== PAIE =================== -->
+      <section class="view" id="view-paie">
+        <div class="toolbar" style="margin-top:20px">
+          <div class="segbar">
+            <button class="btn icon" id="prevMonth" aria-label="Mois précédent">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+            </button>
+            <span class="seglabel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+              Septembre 2026
+            </span>
+            <button class="btn icon" id="nextMonth" aria-label="Mois suivant">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+          <span class="tag" id="payStatus">Mois en cours</span>
+          <button class="btn" id="closeMonth" style="margin-left:auto">Clôturer le mois</button>
+          <button class="btn dark" id="exportPay">Exporter pour le comptable</button>
+        </div>
+
+        <div class="tablewrap">
+          <div class="tscroll">
+            <table class="tbl" style="min-width:880px">
+              <thead>
+                <tr>
+                  <th style="width:24%">Salarié</th>
+                  <th style="width:11%; text-align:right">Contrat</th>
+                  <th style="width:11%; text-align:right">Réalisées</th>
+                  <th style="width:13%; text-align:right">Compl. / supp.</th>
+                  <th style="width:10%; text-align:right">Nuit</th>
+                  <th style="width:13%; text-align:right">Dim. &amp; fériés</th>
+                  <th style="width:9%; text-align:right">Absence</th>
+                  <th style="width:9%; text-align:right">CP pris</th>
+                </tr>
+              </thead>
+              <tbody id="payBody"></tbody>
+              <tfoot id="payFoot"></tfoot>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================== CAPACITÉ =================== -->
+      <section class="view" id="view-capacite">
+        <div class="kpi1" id="capTotal"></div>
+        <div class="tablewrap" style="margin-top:22px">
+          <div class="tscroll">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th style="width:34%">Intervenante</th>
+                  <th style="width:14%">Contrat</th>
+                  <th style="width:20%">Heures placées</th>
+                  <th style="width:32%">Taux d'occupation</th>
+                </tr>
+              </thead>
+              <tbody id="capBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================== PARTENAIRES =================== -->
+      <section class="view" id="view-partenaires">
+        <div class="toolbar" style="margin-top:20px">
+          <button class="pill" data-part="tous" aria-pressed="true">Tous <span class="cnt">10</span></button>
+          <button class="pill" data-part="Médecin">Médecins</button>
+          <button class="pill" data-part="Kiné">Kinés</button>
+          <button class="pill" data-part="VTC">VTC</button>
+          <button class="pill" data-part="Équipement médical">Équipement médical</button>
+          <button class="btn dark" style="margin-left:auto" onclick="toast('Ajout de partenaire — hors périmètre du POC')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Ajouter un partenaire
+          </button>
+        </div>
+
+        <div class="tablewrap">
+          <div class="tscroll">
+            <table class="tbl">
+              <thead>
+                <tr>
+                  <th style="width:12%">Type</th>
+                  <th style="width:20%">Nom</th>
+                  <th style="width:16%">Prénom</th>
+                  <th style="width:32%">Spécialité</th>
+                  <th style="width:20%">Téléphone</th>
+                </tr>
+              </thead>
+              <tbody id="partBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================== PROSPECTS =================== -->
+      <section class="view" id="view-prospects">
+        <div class="toolbar" style="margin-top:20px">
+          <button class="btn dark" id="newLeadBtn" style="margin-left:auto">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Ajouter une opportunité
+          </button>
+        </div>
+        <div class="kb" id="kanban"></div>
+      </section>
+
+      <!-- =================== RECRUTEMENT =================== -->
+      <section class="view" id="view-recrutement">
+        <div class="toolbar" style="margin-top:20px">
+          <button class="btn dark" id="newCandBtn" style="margin-left:auto">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Ajouter une candidature
+          </button>
+        </div>
+        <div class="kb" id="recruit"></div>
+      </section>
+
+      <!-- =================== INTÉGRATIONS =================== -->
+      <section class="view" id="view-integrations">
+        <div class="integs" id="integList" style="margin-top:20px"></div>
+      </section>
+
+
+    </div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mtitle">
+    <div class="mhead">
+      <div class="verdict" id="mverdict"></div>
+      <h3 id="mtitle"></h3>
+      <p id="msub"></p>
+    </div>
+    <div class="mbody" id="mbody"></div>
+    <div class="mfoot" id="mfoot"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toastTxt"></span></div>
+
+<script>
+/* ============================================================
+   DONNÉES — jeu d'exemple réaliste (aucune donnée réelle)
+   ============================================================ */
+const DAYS = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+const WEEKS = [
+  {label:"14 – 20 septembre 2026",        dates:[14,15,16,17,18,19,20], mois:"septembre", today:-1},
+  {label:"21 – 27 septembre 2026",        dates:[21,22,23,24,25,26,27], mois:"septembre", today:2},
+  {label:"28 septembre – 4 octobre 2026", dates:[28,29,30,1,2,3,4],     mois:"octobre",   today:-1}
+];
+let wk = 1;                       /* semaine affichée */
+const W = () => WEEKS[wk];
+const CUR = () => wk === 1;       /* seule la semaine courante porte absences et non-pourvues */
+const DATES = new Proxy({}, {get:(_,k)=> W().dates[k]});
+const TODAY_IDX = () => W().today;
+
+/* sur les autres semaines, le planning revient à son état nominal */
+const staffOf = v => CUR() ? v.staff : v.titulaire;
+const absentOn = (p,d) => CUR() && p.absent && p.absent.includes(d);
+
+const PRESTA = {
+  toilette:{n:"Toilette & soins d'hygiène", short:"Toilette",       hab:"toilette"},
+  menage:  {n:"Mobilité & transferts",      short:"Mobilité"},
+  courses: {n:"Traitements & pilulier",     short:"Traitements"},
+  accomp:  {n:"Accompagnement médical",     short:"Accompagnement"},
+  nuit:    {n:"Garde de nuit",              short:"Nuit", hab:"nuit"}
+};
+
+
+const STAFF = [
+  {id:"awa",   nom:"Awa Traoré",        c:"CDI", h:35, sect:"est",    depl:"Métro",  hab:["toilette","alzheimer"],
+   entree:"14/03/2022", dip:"DEAES", rh:{l:"Entretien professionnel",w:"12/01/2027",lv:"ok"}},
+  {id:"fatou", nom:"Fatou Diallo",      c:"CDI", h:35, sect:"nord",   depl:"Métro",  hab:["toilette"],
+   entree:"02/09/2021", dip:"DEAES", rh:{l:"Visite médicale périodique",w:"08/11/2026",lv:"ok"}},
+  {id:"sand",  nom:"Sandrine Meunier",  c:"CDI", h:30, sect:"ouest",  depl:"Bus",    hab:["toilette"], absent:[2,3,4], motif:"Arrêt maladie",
+   entree:"18/01/2023", dip:"Titre ADVF", rh:{l:"Visite de reprise si > 30 j",w:"à surveiller",lv:"warn"}},
+  {id:"nadia", nom:"Nadia Belkacem",    c:"CDI", h:35, sect:"centre", depl:"Vélo",   hab:["toilette","nuit"],
+   entree:"05/06/2020", dip:"DEAES", rh:{l:"Suivi renforcé travail de nuit",w:"14/10/2026",lv:"warn"}},
+  {id:"rosa",  nom:"Rosa Pinto",        c:"CDI", h:28, sect:"sud",    depl:"Métro",  hab:[],
+   entree:"22/11/2022", dip:"—", rh:{l:"Formation gestes et postures",w:"03/12/2026",lv:"ok"}},
+  {id:"malika",nom:"Malika Hadj",       c:"CDI", h:35, sect:"est",    depl:"Marche", hab:["toilette","parkinson"],
+   entree:"09/02/2019", dip:"DEAES", rh:{l:"Entretien professionnel",w:"en retard de 21 j",lv:"danger"}},
+  {id:"celine",nom:"Céline Barrault",   c:"CDI", h:24, sect:"ouest",  depl:"Voiture",hab:["toilette"],
+   entree:"30/08/2024", dip:"Titre ADVF", rh:{l:"Visite médicale périodique",w:"21/02/2027",lv:"ok"}},
+
+  {id:"jm",    nom:"Jean-Marc Ollivier",c:"CDD", h:20, sect:"sud",    depl:"Scooter",hab:[],
+   entree:"01/07/2026", fin:"31/12/2026", motifCdd:"Accroissement d'activité", dip:"—", rh:{l:"Fin de contrat",w:"dans 14 semaines",lv:"ok"}},
+  {id:"elodie",nom:"Élodie Vasseur",    c:"CDD", h:24, sect:"nord",   depl:"Métro",  hab:[],
+   entree:"15/04/2026", fin:"14/10/2026", motifCdd:"Remplacement congé maternité", dip:"Titre ADVF", rh:{l:"Fin de contrat",w:"dans 3 semaines",lv:"warn"}},
+  {id:"priya", nom:"Priya Rajan",       c:"CDD", h:15, sect:"centre", depl:"Métro",  hab:[],
+   entree:"01/09/2026", fin:"30/11/2026", motifCdd:"Accroissement d'activité", dip:"—", rh:{l:"Fin de période d'essai",w:"30/09/2026",lv:"warn"}},
+
+  {id:"lina",  nom:"Lina Ferreira",     c:"Intérim", h:24, sect:"ouest", depl:"Métro", hab:["toilette"],
+   entree:"14/09/2026", fin:"10/10/2026", agence:"Vitalis Intérim", motifCdd:"Remplacement arrêt maladie", dip:"Titre ADVF", rh:{l:"Fin de mission",w:"dans 2 semaines",lv:"warn"}},
+  {id:"kevin", nom:"Kevin Adjovi",      c:"Intérim", h:18, sect:"sud",   depl:"Vélo",  hab:[],
+   entree:"07/09/2026", fin:"03/10/2026", agence:"Domicil'Emploi", motifCdd:"Surcroît ponctuel", dip:"—", rh:{l:"Fin de mission",w:"dans 1 semaine",lv:"danger"}}
+];
+
+const FAM = {
+  delaunay:{adr:"14 rue Keller", n:"Mme Delaunay", a:"11e", s:"est"},
+  behar:   {adr:"8 rue des Rosiers", n:"M. Behar",      a:"4e",  s:"centre"},
+  nguyen:  {adr:"52 avenue de Choisy", n:"Mme Nguyen",    a:"13e", s:"sud"},
+  lecomte: {adr:"23 rue de Lévis", n:"M. Lecomte",    a:"17e", s:"nord"},
+  farrugia:{adr:"9 rue Lecourbe", n:"Mme Farrugia",  a:"15e", s:"ouest"},
+  szabo:   {adr:"118 rue des Pyrénées", n:"M. Szabo",      a:"20e", s:"est"},
+  abitbol: {adr:"31 rue de Passy", n:"Mme Abitbol",   a:"16e", s:"ouest"},
+  roussel: {adr:"6 rue Crozatier", n:"M. Roussel",    a:"12e", s:"est"},
+  kowalski:{adr:"44 rue Ordener", n:"Mme Kowalski",  a:"18e", s:"nord"},
+  dasilva: {adr:"17 rue Daguerre", n:"M. Da Silva",   a:"14e", s:"sud"},
+  perrin:  {adr:"12 rue de Bretagne", n:"Mme Perrin",    a:"3e",  s:"centre"},
+  aitouarab:{adr:"75 rue de Belleville", n:"M. Aït-Ouarab",a:"20e", s:"est"},
+  vidal:   {adr:"28 rue Bobillot", n:"Mme Vidal",     a:"13e", s:"sud"},
+  gonzalez:{adr:"61 rue du Commerce", n:"M. Gonzalez",   a:"15e", s:"ouest"},
+  thibault:{adr:"96 bd Voltaire", n:"Mme Thibault",  a:"11e", s:"est"}
+};
+
+/* dossier bénéficiaire */
+const FAMINFO = {
+  delaunay: {ref:"Claire Delaunay, fille", depuis:"03/2023", acces:"Code 4A21B · 3e sans ascenseur", statut:"actif"},
+  behar:    {ref:"Simon Behar, fils",       depuis:"11/2022", acces:"Interphone · 2e étage", statut:"actif"},
+  nguyen:   {ref:"Mme Nguyen",              depuis:"06/2024", acces:"Rez-de-chaussée · chat", statut:"actif"},
+  lecomte:  {ref:"Hélène Lecomte, fille",   depuis:"01/2022", acces:"Code 78B2 · 5e avec ascenseur", statut:"actif"},
+  farrugia: {ref:"Jean Farrugia, fils",     depuis:"09/2023", acces:"Boîte à clés · 1er étage", statut:"actif"},
+  szabo:    {ref:"Mme Szabo, épouse",       depuis:"04/2024", acces:"4e avec ascenseur", statut:"actif"},
+  abitbol:  {ref:"David Abitbol, fils",     depuis:"02/2023", acces:"Digicode 1985A", statut:"actif"},
+  roussel:  {ref:"Marie Roussel, fille",    depuis:"07/2021", acces:"1er étage · chien", statut:"actif"},
+  kowalski: {ref:"Anna Kowalski, nièce",    depuis:"10/2023", acces:"Code 3344 · 2e étage", statut:"actif"},
+  dasilva:  {ref:"M. Da Silva",      depuis:"08/2026", acces:"Rez-de-chaussée", statut:"temporaire"},
+  perrin:   {ref:"Luc Perrin, fils",        depuis:"05/2022", acces:"Code 22B · 2e étage", statut:"actif"},
+  aitouarab:{ref:"Nadia Aït-Ouarab, fille", depuis:"12/2022", acces:"6e avec ascenseur", statut:"actif"},
+  vidal:    {ref:"Mme Vidal",               depuis:"03/2025", acces:"Interphone · 3e étage", statut:"actif"},
+  gonzalez: {ref:"Pilar Gonzalez, fille",   depuis:"06/2023", acces:"3e sans ascenseur", statut:"actif"},
+  thibault: {ref:"Mme Thibault",            depuis:"01/2024", acces:"Code 9087 · 1er étage", statut:"actif"}
+};
+
+/* missions récurrentes -> occurrences (règle ≠ instance) */
+const MISSIONS = [
+  ["awa","delaunay","toilette",[0,1,2,3,4],"08:00","10:00"],
+  ["awa","szabo","accomp",[0,2,4],"10:45","12:45"],
+  ["awa","roussel","courses",[1,3],"11:00","13:00"],
+  ["awa","thibault","menage",[0,2,4],"14:00","17:00"],
+  ["awa","delaunay","toilette",[5],"09:00","11:00"],
+
+  ["fatou","lecomte","toilette",[0,1,2,3,4],"07:30","09:30"],
+  ["fatou","kowalski","menage",[0,2,4],"10:15","13:15"],
+  ["fatou","lecomte","accomp",[1,3],"10:15","12:15"],
+  ["fatou","kowalski","courses",[1,3,5],"15:00","17:00"],
+  ["fatou","lecomte","toilette",[6],"09:00","11:00"],
+
+  ["sand","farrugia","toilette",[0,1,2,3,4],"08:00","10:00"],
+  ["sand","abitbol","menage",[0,2,4],"11:00","14:00"],
+  ["sand","gonzalez","courses",[1,3],"11:00","13:00"],
+  ["sand","farrugia","accomp",[2,4],"15:00","17:00"],
+
+  ["nadia","perrin","toilette",[0,1,2,3,4],"08:30","10:30"],
+  ["nadia","behar","toilette",[0,1,2,3,4],"11:15","13:15"],
+  ["nadia","perrin","menage",[1,3],"14:30","17:30"],
+  ["nadia","behar","nuit",[5],"20:00","31:00"],
+
+  ["rosa","nguyen","menage",[0,2,4],"09:00","12:00"],
+  ["rosa","dasilva","courses",[0,1,2,3,4],"13:00","15:00"],
+  ["rosa","vidal","accomp",[1,3],"09:30","11:30"],
+
+  ["malika","aitouarab","toilette",[0,1,2,3,4],"07:45","09:45"],
+  ["malika","roussel","toilette",[0,1,2,3,4],"10:30","12:30"],
+  ["malika","szabo","menage",[1,3],"14:00","17:00"],
+  ["malika","thibault","accomp",[5],"10:00","13:00"],
+
+  ["celine","abitbol","accomp",[1,3],"09:00","12:00"],
+  ["celine","gonzalez","menage",[0,2],"09:00","12:00"],
+  ["celine","gonzalez","accomp",[4],"09:00","12:00"],
+  ["celine","abitbol","courses",[4],"14:00","16:00"],
+  ["celine","farrugia","courses",[5],"10:00","12:00"],
+
+  ["jm","dasilva","accomp",[0,2,4],"16:00","18:00"],
+  ["jm","vidal","courses",[0,2,4],"13:30","15:30"],
+  ["jm","nguyen","accomp",[3],"13:30","15:30"],
+  ["jm","nguyen","courses",[5],"10:00","12:00"],
+
+  ["elodie","lecomte","menage",[1,3],"14:00","17:00"],
+  ["elodie","kowalski","accomp",[0,2,4],"14:00","16:00"],
+  ["elodie","lecomte","courses",[5,6],"10:00","12:00"],
+
+  ["priya","perrin","courses",[1,3],"11:00","13:00"],
+  ["priya","behar","menage",[0,2,4],"15:00","17:00"],
+  ["priya","thibault","courses",[6],"10:00","12:00"],
+
+  ["lina","gonzalez","accomp",[1,3],"14:00","17:00"],
+  ["lina","abitbol","courses",[0,2],"15:00","17:00"],
+
+  ["kevin","dasilva","menage",[1,3],"09:00","12:00"],
+  ["kevin","vidal","courses",[0,4],"16:00","18:00"]
+];
+
+const toMin = t => {const [h,m]=t.split(":").map(Number); return h*60+m;};
+const fmt = m => {m=((m%1440)+1440)%1440; return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0");};
+
+let VACS = [];
+let uid = 0;
+MISSIONS.forEach(([staff,fam,pr,days,s,e])=>{
+  days.forEach(d=>{
+    VACS.push({id:"v"+(++uid), staff, fam, pr, day:d, s:toMin(s), e:toMin(e), titulaire:staff});
+  });
+});
+/* l'arrêt de Sandrine libère ses interventions -> ligne « à pourvoir » */
+VACS.forEach(v=>{ if(v.staff==="sand" && [2,3,4].includes(v.day)) v.staff = null; });
+
+/* matrice de temps de parcours (minutes, transports parisiens) */
+const TRAVEL = {
+  "est|est":12,"nord|nord":12,"ouest|ouest":12,"centre|centre":10,"sud|sud":12,
+  "centre|est":18,"centre|nord":20,"centre|ouest":22,"centre|sud":20,
+  "est|nord":30,"est|sud":28,"nord|ouest":28,"ouest|sud":30,"est|ouest":45,"nord|sud":40
+};
+const travel = (a,b)=> TRAVEL[a+"|"+b] ?? TRAVEL[b+"|"+a] ?? 25;
+
+const st = id => STAFF.find(s=>s.id===id);
+const hoursOf = id => VACS.filter(v=>v.staff===id).reduce((t,v)=>t+(v.e-v.s)/60,0);
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+/* ============================================================
+   MOTEUR DE RÈGLES
+   ============================================================ */
+const REPOS = 660;      // 11 h
+const BUFFER = 10;      // marge de sécurité trajet
+
+function evaluate(vac, targetStaff, targetDay){
+  const p = st(targetStaff);
+  const out = [];
+  const nS = targetDay*1440 + vac.s;
+  const nE = targetDay*1440 + vac.e;
+  const others = VACS.filter(v=>v.staff===targetStaff && v.id!==vac.id);
+
+  if(p.absent && p.absent.includes(targetDay))
+    out.push({lv:"red", rule:"Absence", t:p.motif+" déclaré", d:`${p.nom} est absente le ${DAYS[targetDay].toLowerCase()} ${DATES[targetDay]} ${W().mois}. Aucune affectation possible.`});
+
+  const need = PRESTA[vac.pr].hab;
+  if(need && !p.hab.includes(need))
+    out.push({lv:"red", rule:"Habilitation", t:"Habilitation manquante", d:`${PRESTA[vac.pr].n} exige l'habilitation « ${need} ». ${p.nom} ne la détient pas.`});
+
+  let overlap = null, restIssue = null;
+  others.forEach(v=>{
+    const oS = v.day*1440 + v.s, oE = v.day*1440 + v.e;
+    if(nS < oE && oS < nE){ overlap = v; return; }
+    const gap = nS >= oE ? nS-oE : oS-nE;
+    if(gap < REPOS && v.day !== targetDay){
+      if(!restIssue || gap < restIssue.gap) restIssue = {v, gap, after: nS >= oE};
+    }
+  });
+
+  if(overlap)
+    out.push({lv:"red", rule:"Chevauchement", t:"Deux interventions en même temps", d:`Déjà chez ${FAM[overlap.fam].n} de ${fmt(overlap.s)} à ${fmt(overlap.e)} le même jour.`});
+
+  if(restIssue && !overlap){
+    const v = restIssue.v;
+    const earliest = restIssue.after ? (v.day*1440+v.e+REPOS) : null;
+    const msg = restIssue.after
+      ? `Fin de l'intervention chez ${FAM[v.fam].n} à ${fmt(v.e)}${v.e>1440?" (lendemain)":""}. Repos de 11 h non respecté — première prise de poste possible à ${fmt(earliest%1440)}${Math.floor(earliest/1440)!==targetDay?" le "+DAYS[Math.floor(earliest/1440)].toLowerCase():""}.`
+      : `L'intervention suivante chez ${FAM[v.fam].n} démarre à ${fmt(v.s)} le ${DAYS[v.day].toLowerCase()} : il ne resterait que ${Math.floor(restIssue.gap/60)} h ${restIssue.gap%60} de repos au lieu de 11 h.`;
+    out.push({lv:"red", rule:"Repos quotidien 11 h", t:"Repos quotidien non respecté", d:msg});
+  }
+
+  /* trajet inter-intervention */
+  const sameDay = others.filter(v=>v.day===targetDay).sort((a,b)=>a.s-b.s);
+  let tight = null;
+  sameDay.forEach(v=>{
+    const need2 = travel(FAM[v.fam].s, FAM[vac.fam].s);
+    if(v.e <= vac.s){
+      const gap = vac.s - v.e;
+      if(gap < need2 + BUFFER) tight = {from:v, gap, need:need2, dir:"après"};
+    } else if(vac.e <= v.s){
+      const gap = v.s - vac.e;
+      if(gap < need2 + BUFFER && (!tight || gap < tight.gap)) tight = {from:v, gap, need:need2, dir:"avant"};
+    }
+  });
+  if(tight){
+    const lv = tight.gap < tight.need ? "red" : "orange";
+    out.push({lv, rule:"Trajet", t: lv==="red" ? "Trajet infaisable" : "Trajet serré",
+      d:`${FAM[tight.from.fam].a} → ${FAM[vac.fam].a} : ${tight.need} min en ${p.depl.toLowerCase()}, ${tight.gap} min disponibles${lv==="red"?"." : " — marge de sécurité de 10 min non tenue."} Le temps de trajet est du temps de travail.`});
+  }
+
+  /* durée contractuelle */
+  const cur = hoursOf(targetStaff) - (vac.staff===targetStaff ? (vac.e-vac.s)/60 : 0);
+  const nxt = cur + (vac.e-vac.s)/60;
+  if(nxt > p.h)
+    out.push({lv:"orange", rule:"Durée contractuelle", t:"Dépassement du contrat", d:`${nxt.toFixed(1).replace(".",",")} h planifiées pour un contrat de ${p.h} h. ${(nxt-p.h).toFixed(1).replace(".",",")} h en heures complémentaires, majorées.`});
+  else if(nxt === p.h)
+    out.push({lv:"orange", rule:"Durée contractuelle", t:"Durée contractuelle atteinte", d:`${p.nom} atteint exactement ses ${p.h} h. Toute heure ajoutée ensuite sera une heure complémentaire.`});
+
+  /* jours consécutifs */
+  const days = new Set(others.map(v=>v.day)); days.add(targetDay);
+  if(days.size >= 6)
+    out.push({lv:"orange", rule:"Repos hebdomadaire", t:`${days.size} jours travaillés`, d:`Le repos hebdomadaire de 35 h consécutives devient difficile à garantir. Un jour de repos doit être posé.`});
+
+  /* compteur nuit */
+  if(vac.pr === "nuit"){
+    out.push({lv:"orange", rule:"Travail de nuit", t:"Compteur travailleur de nuit", d:`${p.nom} : 182 h de nuit sur 12 mois glissants. Seuil de 270 h à surveiller — statut de travailleur de nuit et surveillance médicale renforcée.`});
+  }
+
+  /* intervenante habituelle */
+  const usual = new Set(VACS.filter(v=>v.fam===vac.fam && v.titulaire).map(v=>v.titulaire));
+  if(!usual.has(targetStaff))
+    out.push({lv:"blue", rule:"Continuité", t:"Première intervention chez ce bénéficiaire", d:`${p.nom} n'est jamais intervenue chez ${FAM[vac.fam].n}. Prévoir une présentation — la stabilité du binôme est un facteur clé de qualité.`});
+
+  if(!out.length)
+    out.push({lv:"green", rule:"Conforme", t:"Aucune alerte", d:"Repos, trajet, habilitation, durée contractuelle et continuité : tous les contrôles passent."});
+
+  return out;
+}
+
+/* ============================================================
+   RENDU DU PLANNING
+   ============================================================ */
+const calHead   = document.getElementById("calHead");
+const calBody   = document.getElementById("calBody");
+const calScroll = document.getElementById("calScroll");
+const whobar    = document.getElementById("whobar");
+
+let HOUR_PX = 38;
+
+/* on n'affiche que la plage horaire réellement occupée, ±1 h */
+function calRange(){
+  const src = byStaff()
+    ? VACS.filter(v=>staffOf(v)===planFilter.id)
+    : VACS.filter(v=>v.fam===planFilter.id);
+  const bounds = [];
+  src.forEach(v=>{
+    bounds.push(v.s, Math.min(v.e, 1440));
+    if(v.e > 1440){                       /* nuit à cheval sur deux jours */
+      const end = v.e - 1440;
+      bounds.push(0, end);
+      if(byStaff()) bounds.push(Math.min(1440, end + REPOS));
+    }
+  });
+  if(!bounds.length) return {from:7, to:20};
+  const from = Math.max(0, Math.floor(Math.min(...bounds) / 60));
+  const to   = Math.min(24, Math.ceil(Math.max(...bounds) / 60));
+  return {from, to:Math.max(to, from + 4)};
+}
+
+/* le planning se lit soit par intervenante, soit par famille */
+let planFilter = {kind:"staff", id: STAFF[0].id};
+const byStaff = () => planFilter.kind === "staff";
+
+function vacBlock(v, from, to){
+  const f = FAM[v.fam];
+  const el = document.createElement("button");
+  el.className = "vac" + (v.pr === "nuit" ? " nuit" : "") + (v.staff ? "" : " tofill");
+  el.draggable = true;
+  el.dataset.id = v.id;
+  const who = byStaff() ? f.n : (v.staff ? st(v.staff).nom : "À pourvoir");
+  el.title = `${f.n} · ${f.a} — ${PRESTA[v.pr].n} — ${fmt(v.s)} à ${fmt(v.e)}`
+           + (v.staff ? ` — ${st(v.staff).nom}` : " — à pourvoir");
+  const h = (to - from) / 60 * HOUR_PX - 4;
+  el.style.top = ((from - CAL.from * 60) / 60 * HOUR_PX + 2) + "px";
+  el.style.height = Math.max(26, h) + "px";
+  el.innerHTML = `
+    <span class="t">${fmt(v.s)}–${fmt(v.e)}</span>
+    <span class="n">${who}</span>
+    ${h > 62 ? `<span class="p">${PRESTA[v.pr].short}</span>` : ""}`;
+  el.addEventListener("dragstart", e=>{
+    e.dataTransfer.setData("text/plain", v.id);
+    e.dataTransfer.effectAllowed = "move";
+    el.classList.add("dragging");
+  });
+  el.addEventListener("dragend", ()=> el.classList.remove("dragging"));
+  el.onclick = ()=> openVac(v);
+  return el;
+}
+
+let CAL = {from:0, to:24};
+
+function renderGrid(){
+  CAL = calRange();
+  const hours = CAL.to - CAL.from;
+  const avail = calScroll.clientHeight;
+  HOUR_PX = avail > 160 ? Math.max(34, (avail - 2) / hours) : 38;
+  const DAY_PX = hours * HOUR_PX;
+
+  /* résumé */
+  if(byStaff()){
+    const p = st(planFilter.id);
+    const h = hoursOf(p.id), over = h > p.h;
+    whobar.innerHTML = `
+      <span class="contract ${p.c==="CDD"?"cdd":p.c==="Intérim"?"interim":""}">${p.c}</span>
+      <span class="${over?"over":""}">${Math.round(h)} h</span>
+      <span class="sep">/ contrat ${p.h} h</span>`;
+  } else {
+    const id = planFilter.id, team = famStaff(id).length;
+    whobar.innerHTML = `
+      <span class="contract">${FAM[id].a}</span>
+      <span>${Math.round(famHours(id))} h</span>
+      <span class="sep">/ sem · ${team} intervenante${team>1?"s":""}</span>`;
+  }
+
+  /* en-tête des jours */
+  calHead.innerHTML = `<div></div>` + DAYS.map((d,i)=>`
+    <div class="${i===TODAY_IDX()?"today":""}">
+      <div class="dow">${d.slice(0,3)}</div>
+      <div class="dnum">${DATES[i]}</div>
+    </div>`).join("");
+
+  /* gouttière horaire */
+  calBody.innerHTML = "";
+  const gutter = document.createElement("div");
+  gutter.className = "calgutter";
+  gutter.style.height = DAY_PX + "px";
+  for(let hh=CAL.from+1; hh<CAL.to; hh++){
+    const lbl = document.createElement("span");
+    lbl.style.top = ((hh - CAL.from) * HOUR_PX) + "px";
+    lbl.textContent = String(hh).padStart(2,"0") + "h";
+    gutter.appendChild(lbl);
+  }
+  calBody.appendChild(gutter);
+
+  const p = byStaff() ? st(planFilter.id) : null;
+
+  DAYS.forEach((_,d)=>{
+    const col = document.createElement("div");
+    col.className = "calday" + (d===TODAY_IDX() ? " today" : "");
+    col.style.height = DAY_PX + "px";
+    col.style.backgroundSize = "100% " + HOUR_PX + "px";
+    col.dataset.day = d;
+
+    if(p && absentOn(p,d)){
+      col.classList.add("off");
+      col.innerHTML = `<div class="offlbl">${p.motif}<br>indisponible</div>`;
+    } else {
+      const todays = byStaff()
+        ? VACS.filter(v=>staffOf(v)===p.id && v.day===d)
+        : VACS.filter(v=>v.fam===planFilter.id && v.day===d);
+      todays.forEach(v=> col.appendChild(vacBlock(v, v.s, Math.min(v.e, 1440))));
+
+      /* nuit qui déborde de la veille + repos généré */
+      const prev = (byStaff() ? VACS.filter(v=>staffOf(v)===p.id) : VACS.filter(v=>v.fam===planFilter.id))
+                   .find(v=>v.day===d-1 && v.e>1440);
+      if(prev){
+        const end = prev.e - 1440;
+        col.appendChild(vacBlock(prev, 0, end));
+        if(byStaff()){
+          const b = document.createElement("div");
+          b.className = "blocked";
+          b.style.top = ((end - CAL.from * 60) / 60 * HOUR_PX + 2) + "px";
+          b.style.height = Math.max(24, REPOS / 60 * HOUR_PX - 4) + "px";
+          b.textContent = `Repos 11 h — jusqu'à ${fmt(end + REPOS)}`;
+          col.appendChild(b);
+        }
+      }
+    }
+
+    if(d === TODAY_IDX()){
+      const mins = new Date().getHours()*60 + new Date().getMinutes();
+      if(mins >= CAL.from*60 && mins <= CAL.to*60){
+        const line = document.createElement("div");
+        line.className = "now";
+        line.style.top = ((mins - CAL.from*60) / 60 * HOUR_PX) + "px";
+        col.appendChild(line);
+      }
+    }
+
+    col.addEventListener("dragover", e=>{ e.preventDefault(); col.classList.add("drop"); });
+    col.addEventListener("dragleave", ()=> col.classList.remove("drop"));
+    col.addEventListener("drop", e=>{
+      e.preventDefault(); col.classList.remove("drop");
+      const vac = VACS.find(v=>v.id === e.dataTransfer.getData("text/plain"));
+      if(!vac || vac.day === d) return;
+      if(!CUR()){ toast("Revenez sur la semaine courante pour modifier le planning."); return; }
+      const who = byStaff() ? planFilter.id : vac.staff;
+      if(!who){ toast("Cette intervention n'a pas encore d'intervenante."); return; }
+      openVerdict(vac, who, d);
+    });
+
+    calBody.appendChild(col);
+  });
+
+  updateKpis();
+}
+
+function updateKpis(){
+  document.getElementById("nb-fill").textContent = VACS.filter(v=>!v.staff).length;
+}
+
+/* contrôles de filtre du planning */
+const combo = document.getElementById("staffCombo");
+const comboBtn = document.getElementById("comboBtn");
+const comboPop = document.getElementById("comboPop");
+const comboList = document.getElementById("comboList");
+const comboSearch = document.getElementById("comboSearch");
+const comboLabel = document.getElementById("comboLabel");
+const TICK = '<svg class="tick" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+
+function comboOptions(q=""){
+  const t = q.trim().toLowerCase();
+  const mStaff = p => !t || p.nom.toLowerCase().includes(t) || p.c.toLowerCase().includes(t) || p.sect.includes(t);
+  const mFam = id => {
+    const f = FAM[id];
+    return !t || f.n.toLowerCase().includes(t) || f.a.includes(t) || f.s.includes(t);
+  };
+  return {
+    cdi: STAFF.filter(p=>p.c==="CDI" && mStaff(p)),
+    cdd: STAFF.filter(p=>p.c==="CDD" && mStaff(p)),
+    int: STAFF.filter(p=>p.c==="Intérim" && mStaff(p)),
+    fam: Object.keys(FAM).filter(mFam)
+  };
+}
+
+function optionRow(kind, id){
+  const b = document.createElement("button");
+  b.className = "copt"; b.type = "button"; b.setAttribute("role","option");
+  b.setAttribute("aria-selected", String(planFilter.kind === kind && planFilter.id === id));
+  if(kind === "staff"){
+    const p = st(id);
+    b.innerHTML = `<span><b>${p.nom}</b><small>${cap(p.sect)} · ${Math.round(hoursOf(p.id))} h / ${p.h} h</small></span>${TICK}`;
+  } else {
+    b.innerHTML = `<span><b>${FAM[id].n}</b><small>${FAM[id].a} · ${Math.round(famHours(id))} h / sem</small></span>${TICK}`;
+  }
+  b.onclick = ()=> pickEntity(kind, id);
+  return b;
+}
+
+function renderCombo(q=""){
+  const o = comboOptions(q);
+  comboList.innerHTML = "";
+  [["Intervenantes · CDI", o.cdi, "staff"],
+   ["Intervenantes · CDD", o.cdd, "staff"],
+   ["Intervenantes · Intérim", o.int, "staff"],
+   ["Familles", o.fam, "fam"]].forEach(([label, list, kind])=>{
+    if(!list.length) return;
+    const sep = document.createElement("div");
+    sep.className = "combosep"; sep.textContent = label;
+    comboList.appendChild(sep);
+    list.forEach(x=> comboList.appendChild(optionRow(kind, kind === "staff" ? x.id : x)));
+  });
+  if(!comboList.children.length)
+    comboList.innerHTML = `<div class="comboempty">Aucun résultat.</div>`;
+}
+
+function openCombo(){
+  combo.classList.add("open");
+  comboBtn.setAttribute("aria-expanded","true");
+  comboPop.hidden = false;
+  comboSearch.value = "";
+  renderCombo();
+  comboSearch.focus();
+}
+function closeCombo(){
+  combo.classList.remove("open");
+  comboBtn.setAttribute("aria-expanded","false");
+  comboPop.hidden = true;
+}
+comboBtn.onclick = ()=> comboPop.hidden ? openCombo() : closeCombo();
+comboSearch.oninput = ()=> renderCombo(comboSearch.value);
+comboSearch.onkeydown = e=>{
+  if(e.key === "Escape"){ closeCombo(); comboBtn.focus(); }
+  if(e.key === "Enter"){ const f = comboList.querySelector(".copt"); if(f) f.click(); }
+};
+document.addEventListener("click", e=>{ if(!combo.contains(e.target)) closeCombo(); });
+
+function pickEntity(kind, id){
+  planFilter = {kind, id};
+  closeCombo(); syncPlanControls(); renderGrid();
+}
+
+function syncPlanControls(){
+  if(byStaff()){
+    const p = st(planFilter.id);
+    comboLabel.textContent = p.nom;
+  } else {
+    comboLabel.textContent = FAM[planFilter.id].n;
+  }
+}
+
+/* ============================================================
+   MODALE DE VERDICT
+   ============================================================ */
+const scrim = document.getElementById("scrim");
+const LABEL = {red:"Refusé", orange:"Possible avec justification", blue:"Signalement qualité", green:"Conforme"};
+
+function openVerdict(vac, targetStaff, targetDay){
+  const checks = evaluate(vac, targetStaff, targetDay);
+  const worst = checks.some(c=>c.lv==="red") ? "red"
+              : checks.some(c=>c.lv==="orange") ? "orange"
+              : checks.some(c=>c.lv==="blue") ? "blue" : "green";
+  const p = st(targetStaff);
+
+  document.getElementById("mverdict").textContent = LABEL[worst];
+  document.getElementById("mverdict").style.color =
+    worst==="red" ? "var(--danger)" : worst==="orange" ? "var(--warn)" : worst==="blue" ? "var(--info)" : "var(--ok)";
+  document.getElementById("mtitle").textContent =
+    `${FAM[vac.fam].n} → ${p.nom}`;
+  document.getElementById("msub").textContent =
+    `${PRESTA[vac.pr].n} · ${DAYS[targetDay]} ${DATES[targetDay]} ${W().mois} · ${fmt(vac.s)}–${fmt(vac.e)} · ${FAM[vac.fam].a}`;
+
+  const body = document.getElementById("mbody");
+  body.innerHTML = "";
+  checks.forEach(c=>{
+    const d = document.createElement("div");
+    d.className = "check " + c.lv;
+    d.innerHTML = `
+      <div><span class="rule">${c.rule}</span><b>${c.t}</b><p>${c.d}</p></div>`;
+    body.appendChild(d);
+  });
+
+  const foot = document.getElementById("mfoot");
+  foot.innerHTML = "";
+  if(worst === "red"){
+    const note = document.createElement("div");
+    note.style.cssText = "font-size:12px; color:var(--ink-2); flex:1; font-weight:600";
+    note.textContent = "Affectation impossible — la règle n'est pas contournable.";
+    foot.append(note, mkBtn("Fermer","dark",close));
+  } else if(worst === "orange"){
+    const wrap = document.createElement("div");
+    wrap.style.cssText = "flex:1; display:flex; flex-direction:column; gap:10px";
+    const ta = document.createElement("textarea");
+    ta.className = "just"; ta.placeholder = "Justification obligatoire — elle sera horodatée et attribuée à Laurence Nénon.";
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex; gap:9px; justify-content:flex-end";
+    const ok = mkBtn("Confirmer et tracer","dark",()=>{
+      if(ta.value.trim().length < 5){ ta.focus(); toast("Une justification est requise."); return; }
+      apply(vac,targetStaff,targetDay); close();
+      toast("Affectation tracée · justification enregistrée");
+    });
+    row.append(mkBtn("Annuler","",close), ok);
+    wrap.append(ta,row); foot.appendChild(wrap);
+    setTimeout(()=>ta.focus(),60);
+  } else {
+    foot.append(
+      document.createElement("div"),
+      mkBtn("Annuler","",close),
+      mkBtn("Confirmer l'affectation","dark",()=>{ apply(vac,targetStaff,targetDay); close(); toast("Intervention affectée à "+p.nom); })
+    );
+    foot.firstChild.style.flex = "1";
+  }
+  scrim.classList.add("on");
+}
+function mkBtn(txt,cls,fn){const b=document.createElement("button"); b.className="btn "+cls; b.textContent=txt; b.onclick=fn; return b;}
+function close(){ scrim.classList.remove("on"); }
+function apply(vac,staff,day){ vac.staff = staff; vac.day = day; renderGrid(); renderAffectation(); renderPersonnel(); renderFamilles(); }
+scrim.addEventListener("click", e=>{ if(e.target===scrim) close(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") close(); });
+
+/* toast */
+let tTimer;
+function toast(msg){
+  const t = document.getElementById("toast");
+  document.getElementById("toastTxt").textContent = msg;
+  t.classList.add("on"); clearTimeout(tTimer);
+  tTimer = setTimeout(()=>t.classList.remove("on"), 3200);
+}
+
+/* ---------- détail d'une intervention ---------- */
+function openVac(v){
+  const f = FAM[v.fam], i = FAMINFO[v.fam];
+  document.getElementById("mverdict").textContent = PRESTA[v.pr].n;
+  document.getElementById("mverdict").style.color = "var(--ink-3)";
+  document.getElementById("mtitle").textContent = f.n;
+  document.getElementById("msub").textContent =
+    `${DAYS[v.day]} ${DATES[v.day]} · ${fmt(v.s)} – ${fmt(v.e)}`;
+
+  const rows = [
+    ["Intervenante", v.staff ? st(v.staff).nom + " · " + st(v.staff).c : "Aucune — intervention à pourvoir", v.staff ? "green" : "red"],
+    ["Adresse", `${f.adr}, ${f.a}`, "blue"],
+    ["Accès au domicile", i.acces, "blue"],
+    ["Contact référent", i.ref, "blue"]
+  ];
+  const body = document.getElementById("mbody");
+  body.innerHTML = "";
+  rows.forEach(([t,d,lv])=>{
+    const el = document.createElement("div");
+    el.className = "check " + lv;
+    el.innerHTML = `<div><b>${t}</b><p>${d}</p></div>`;
+    body.appendChild(el);
+  });
+
+  const foot = document.getElementById("mfoot");
+  foot.innerHTML = "";
+  const spacer = document.createElement("div"); spacer.style.flex = "1";
+  const acts = [spacer];
+  if(v.staff){
+    acts.push(mkBtn("Libérer l'intervention","",()=>{
+      v.staff = null;
+      close(); renderGrid(); renderAffectation(); renderPersonnel(); renderFamilles();
+      toast("Intervention libérée — à pourvoir");
+    }));
+  } else {
+    acts.push(mkBtn("Affecter","",()=>{ asgSel = v.id; close(); go("affectation"); renderAffectation(); }));
+  }
+  acts.push(mkBtn("Fermer","dark",close));
+  foot.append(...acts);
+  scrim.classList.add("on");
+}
+
+/* ============================================================
+   AFFECTATION
+   ============================================================ */
+let asgSel = null;
+
+function renderAffectation(){
+  const list = document.getElementById("asgList");
+  const cands = document.getElementById("asgCands");
+  const needs = VACS.filter(v=>!v.staff).sort((a,b)=> a.day-b.day || a.s-b.s);
+
+  document.getElementById("asgCount").textContent = needs.length ? needs.length + " à pourvoir" : "";
+  list.innerHTML = "";
+
+  if(!needs.length){
+    list.innerHTML = `<div class="asgempty">Toutes les interventions sont pourvues.</div>`;
+    document.getElementById("asgHead").textContent = "Personnel disponible";
+    cands.innerHTML = `<div class="asgempty">Sélectionnez une intervention à pourvoir.</div>`;
+    return;
+  }
+
+  if(!needs.some(v=>v.id === asgSel)) asgSel = needs[0].id;
+
+  needs.forEach(v=>{
+    const f = FAM[v.fam];
+    const b = document.createElement("button");
+    b.className = "need-row";
+    b.setAttribute("aria-selected", String(v.id === asgSel));
+    b.innerHTML = `
+      <span class="when">${DAYS[v.day].slice(0,3)}. ${DATES[v.day]}<br>${fmt(v.s)}–${fmt(v.e)}</span>
+      <span><b>${f.n}</b><small>${PRESTA[v.pr].n} · ${f.a}</small></span>`;
+    b.onclick = ()=>{ asgSel = v.id; renderAffectation(); };
+    list.appendChild(b);
+  });
+
+  const vac = VACS.find(v=>v.id === asgSel);
+  const f = FAM[vac.fam];
+  document.getElementById("asgHead").innerHTML =
+    `Disponibles pour ${f.n} · ${DAYS[vac.day].toLowerCase()} ${fmt(vac.s)}`;
+
+  const scored = STAFF.map(p=>{
+    const ch = evaluate(vac, p.id, vac.day);
+    const red = ch.find(c=>c.lv==="red");
+    const orange = ch.find(c=>c.lv==="orange");
+    const blue = ch.find(c=>c.lv==="blue");
+    const rank = red ? 0 : orange ? 1 : blue ? 2 : 3;
+    return {p, red, orange, blue, rank};
+  }).sort((a,b)=> b.rank - a.rank || a.p.nom.localeCompare(b.p.nom));
+
+  cands.innerHTML = "";
+  scored.forEach(({p, red, orange, blue, rank})=>{
+    const row = document.createElement("div");
+    row.className = "cand" + (rank === 0 ? " no" : "");
+    const why = red   ? `${red.t}<em>${red.rule}</em>`
+              : orange ? `${orange.t}<em>${orange.rule}</em>`
+              : blue  ? `Disponible<em>${blue.t}</em>`
+              :         `Disponible<em>Aucune alerte</em>`;
+    row.innerHTML = `
+      <span><b>${p.nom}</b><small>${p.c} · ${cap(p.sect)} · ${Math.round(hoursOf(p.id))} h / ${p.h} h</small></span>
+      <span class="why">${why}</span>`;
+    if(rank > 0){
+      const btn = mkBtn("Affecter", "", ()=> openVerdict(vac, p.id, vac.day));
+      row.appendChild(btn);
+    }
+    cands.appendChild(row);
+  });
+}
+
+/* ============================================================
+   ABSENCES
+   ============================================================ */
+const PENDING = [
+  {who:"Rosa Pinto",      type:"Congés payés",  per:"12 → 23 octobre",  days:"10 j ouvrés"},
+  {who:"Élodie Vasseur",  type:"Enfant malade", per:"24 septembre",     days:"1 j"},
+  {who:"Céline Barrault", type:"Congés payés",  per:"5 → 9 octobre",    days:"5 j ouvrés"}
+];
+
+function renderAbsences(){
+  const body = document.getElementById("pending");
+  body.innerHTML = "";
+  PENDING.forEach((x,idx)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>
+        <div class="pname">
+          <div class="pid"><b>${x.who}</b></div>
+        </div>
+      </td>
+      <td class="muted">${x.type}</td>
+      <td>${x.per}</td>
+      <td class="muted">${x.days}</td>
+      <td class="actcell" style="text-align:right"></td>`;
+    const acts = document.createElement("div");
+    acts.style.cssText = "display:flex; gap:7px; justify-content:flex-end";
+    acts.append(
+      mkBtn("Refuser","",()=>{ PENDING.splice(idx,1); renderAbsences(); toast("Demande refusée"); }),
+      mkBtn("Valider","dark",()=>{ PENDING.splice(idx,1); renderAbsences(); toast("Demande validée"); })
+    );
+    acts.classList.add("rowacts");
+    tr.lastElementChild.appendChild(acts);
+    body.appendChild(tr);
+  });
+
+  if(!PENDING.length)
+    body.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:34px; color:var(--ink-3); font-weight:600">Aucune demande en attente.</td></tr>`;
+
+  document.querySelector('[data-view="absences"] .navbadge').textContent = PENDING.length;
+}
+
+/* ============================================================
+   FAMILLES
+   ============================================================ */
+const famHours = id => VACS.filter(v=>v.fam===id).reduce((t,v)=>t+(v.e-v.s)/60,0);
+const famStaff = id => [...new Set(VACS.filter(v=>v.fam===id && v.titulaire).map(v=>v.titulaire))];
+const famPresta = id => [...new Set(VACS.filter(v=>v.fam===id).map(v=>v.pr))];
+
+function renderFamilles(){
+  const body = document.getElementById("famBody");
+  body.innerHTML = "";
+
+  const list = Object.keys(FAM).sort((a,b)=> famHours(b) - famHours(a));
+
+  list.forEach(id=>{
+    const f = FAM[id], i = FAMINFO[id];
+    const h = famHours(id);
+    const team = famStaff(id);
+    const pr = famPresta(id).map(p=>PRESTA[p].short);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>
+        <div class="pname">
+          <div class="pid">
+            <b>${f.n}${i.statut==="temporaire"?`<span class="contract cdd">TEMPORAIRE</span>`:""}</b>
+            <small>Client depuis ${i.depuis}</small>
+          </div>
+        </div>
+      </td>
+      <td class="num"><span style="font-weight:600">${Math.round(h)} h</span><span style="color:var(--ink-3)"> / sem</span></td>
+      <td class="muted">${pr.join(", ")}</td>
+      <td class="muted">${f.adr}<small class="sub">${f.a}</small></td>
+      <td class="muted">${team.length ? team.map(id=>st(id).nom).join(", ") : "—"}</td>`;
+    tr.className = "clickrow";
+    tr.tabIndex = 0;
+    tr.setAttribute("role","button");
+    tr.setAttribute("aria-label", "Ouvrir le dossier de " + f.n);
+    tr.onclick = ()=> openDossier(id);
+    tr.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openDossier(id); } };
+    body.appendChild(tr);
+  });
+
+}
+
+function openDossier(id){
+  const f = FAM[id], i = FAMINFO[id];
+  const h = famHours(id);
+  const team = famStaff(id).map(s=>st(s).nom);
+  const pr = famPresta(id).map(p=>PRESTA[p].n);
+  const week = VACS.filter(v=>v.fam===id).sort((a,b)=>a.day-b.day||a.s-b.s);
+
+  document.getElementById("mverdict").textContent = "Dossier bénéficiaire";
+  document.getElementById("mverdict").style.color = "var(--ink-3)";
+  document.getElementById("mtitle").textContent = f.n;
+  document.getElementById("msub").textContent = `${f.a} · secteur ${f.s} · client depuis ${i.depuis}`;
+
+  const rows = [
+    ["Plan d'aide", `${Math.round(h)} h par semaine, réparties sur ${new Set(week.map(v=>v.day)).size} jours`, "green"],
+    ["Contact référent", i.ref, "blue"],
+    ["Prestations", pr.join(", "), "blue"],
+    ["Intervenantes attitrées", team.length ? team.join(", ") : "Aucune intervenante attitrée", team.length>1 ? "green" : "orange"],
+    ["Adresse", `${f.adr}, ${f.a} — ${i.acces}`, "blue"]
+  ];
+  if(i.statut === "temporaire")
+    rows.unshift(["Prise en charge temporaire", "Sortie d'hospitalisation — fin de prise en charge à confirmer avec la CPAM", "orange"]);
+
+  const body = document.getElementById("mbody");
+  body.innerHTML = "";
+  rows.forEach(([t,d,lv])=>{
+    const el = document.createElement("div");
+    el.className = "check " + lv;
+    el.innerHTML = `<div><b>${t}</b><p>${d}</p></div>`;
+    body.appendChild(el);
+  });
+
+  const foot = document.getElementById("mfoot");
+  foot.innerHTML = "";
+  const spacer = document.createElement("div"); spacer.style.flex = "1";
+  foot.append(spacer, mkBtn("Voir le planning","",()=>{ planFilter = {kind:"fam", id}; syncPlanControls(); renderGrid(); close(); go("planning"); }), mkBtn("Fermer","dark",close));
+  scrim.classList.add("on");
+}
+
+/* ============================================================
+   PERSONNEL
+   ============================================================ */
+const HAB_LABEL = {toilette:"Toilette", nuit:"Garde de nuit", alzheimer:"Alzheimer", parkinson:"Parkinson"};
+let staffFilter = "tous";
+
+function famsOf(id){
+  return [...new Set(VACS.filter(v=>v.titulaire===id).map(v=>v.fam))];
+}
+
+function renderPersonnel(){
+  const body = document.getElementById("staffBody");
+  body.innerHTML = "";
+
+  const list = STAFF.filter(p=>{
+    if(staffFilter === "tous") return true;
+    if(staffFilter === "alerte") return p.rh.lv !== "ok";
+    return p.c === staffFilter;
+  });
+
+  list.forEach(p=>{
+    const h = hoursOf(p.id);
+    const over = h > p.h;
+    const fams = famsOf(p.id);
+    const absent = !!p.absent;
+    const tr = document.createElement("tr");
+    if(absent) tr.classList.add("off");
+
+    const contratSub = p.c === "CDI"
+      ? `depuis le ${p.entree}`
+      : `${p.entree} → ${p.fin}`;
+
+    const habs = p.hab.map(x=>HAB_LABEL[x]||x);
+    const habTxt = habs.length
+      ? (habs.length > 2 ? `${habs.slice(0,2).join(", ")} +${habs.length-2}` : habs.join(", "))
+      : "—";
+
+    tr.innerHTML = `
+      <td>
+        <div class="pname">
+          <div class="pid">
+            <b>${p.nom}</b>
+            <small>${cap(p.sect)}${absent ? " · en arrêt" : " · " + contratSub}</small>
+          </div>
+        </div>
+      </td>
+      <td><span class="contract ${p.c==="CDD"?"cdd":p.c==="Intérim"?"interim":""}">${p.c}</span></td>
+      <td class="num"><span class="${over?"over":""}" style="font-weight:600">${Math.round(h)} h</span><span style="color:var(--ink-3)"> / ${p.h} h</span></td>
+      <td class="muted">${habTxt}</td>
+      <td class="muted">${fams.length ? fams.map(f=>FAM[f].n).join(", ") : "—"}</td>`;
+    tr.className += " clickrow";
+    tr.tabIndex = 0;
+    tr.setAttribute("role","button");
+    tr.setAttribute("aria-label", "Ouvrir la fiche de " + p.nom);
+    tr.onclick = ()=> openFiche(p.id);
+    tr.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openFiche(p.id); } };
+    body.appendChild(tr);
+  });
+
+  if(!list.length){
+    body.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:34px; color:var(--ink-3); font-weight:600">Aucune intervenante sur ce filtre.</td></tr>`;
+  }
+
+}
+
+function openFiche(id){
+  const p = st(id);
+  const h = hoursOf(id);
+  const fams = famsOf(id);
+  document.getElementById("mverdict").textContent = p.c;
+  document.getElementById("mverdict").style.color = "var(--ink-3)";
+  document.getElementById("mtitle").textContent = p.nom;
+  document.getElementById("msub").textContent =
+    `${p.c === "CDI" ? "Entrée le " + p.entree : p.entree + " → " + p.fin} · ${p.h} h contractuelles · secteur ${p.sect} · ${p.depl}`;
+
+  const rows = [
+    ["Charge planifiée cette semaine", `${Math.round(h)} h sur ${p.h} h contractuelles${h>p.h ? " — " + Math.round(h-p.h) + " h complémentaires, majorées" : ""}`, h>p.h?"orange":"green"],
+    ["Habilitations", p.hab.length ? p.hab.map(x=>HAB_LABEL[x]||x).join(", ") : "Aucune habilitation déclarée — ne peut pas intervenir sur la toilette", p.hab.length?"green":"blue"],
+    ["Familles suivies", fams.length ? `${fams.length} : ${fams.map(f=>FAM[f].n + " (" + FAM[f].a + ")").join(", ")}` : "Aucune famille attitrée", "blue"],
+    ["Prochaine échéance RH", `${p.rh.l} — ${p.rh.w}`, p.rh.lv==="danger"?"red":p.rh.lv==="warn"?"orange":"green"]
+  ];
+  if(p.agence) rows.push(["Agence d'intérim", `${p.agence} · ${p.motifCdd}`, "blue"]);
+  if(p.absent) rows.push(["Absence en cours", `${p.motif} du 23 au 25 septembre — ${VACS.filter(v=>!v.staff).length} interventions à repourvoir`, "red"]);
+
+  const body = document.getElementById("mbody");
+  body.innerHTML = "";
+  rows.forEach(([t,d,lv])=>{
+    const el = document.createElement("div");
+    el.className = "check " + lv;
+    el.innerHTML = `<div><b>${t}</b><p>${d}</p></div>`;
+    body.appendChild(el);
+  });
+
+  const foot = document.getElementById("mfoot");
+  foot.innerHTML = "";
+  const spacer = document.createElement("div");
+  spacer.style.flex = "1";
+  foot.append(spacer, mkBtn("Voir son planning","",()=>{
+    planFilter = {kind:"staff", id};
+    syncPlanControls(); renderGrid();
+    close(); go("planning");
+    toast("Planning filtré sur " + p.nom);
+  }), mkBtn("Fermer","dark",close));
+  scrim.classList.add("on");
+}
+
+document.querySelectorAll("[data-filter]").forEach(b=>{
+  b.onclick = ()=>{
+    staffFilter = b.dataset.filter;
+    document.querySelectorAll("[data-filter]").forEach(x=>x.setAttribute("aria-pressed", String(x===b)));
+    renderPersonnel();
+  };
+});
+
+/* ============================================================
+   CONTRATS — échéances à venir
+   ============================================================ */
+const AUJ = new Date(2026, 8, 23);
+const dParse = d => { const [j,m,a] = d.split("/").map(Number); return new Date(a, m-1, j); };
+const joursAvant = d => Math.round((dParse(d) - AUJ) / 86400000);
+
+const CONTRATS = [
+  {d:"30/09/2026", k:"essai", n:"Fin de période d'essai",  who:"priya"},
+  {d:"03/10/2026", k:"fin",   n:"Fin de mission d'intérim", who:"kevin"},
+  {d:"06/10/2026", k:"debut", n:"Prise de poste",           who:null, nom:"Nina Lopes", c:"CDI"},
+  {d:"10/10/2026", k:"fin",   n:"Fin de mission d'intérim", who:"lina"},
+  {d:"14/10/2026", k:"fin",   n:"Fin de CDD",               who:"elodie"},
+  {d:"30/11/2026", k:"fin",   n:"Fin de CDD",               who:"priya"},
+  {d:"31/12/2026", k:"fin",   n:"Fin de CDD",               who:"jm"},
+  {d:"01/09/2026", k:"debut", n:"Entrée en fonction",       who:"priya"},
+  {d:"14/09/2026", k:"debut", n:"Début de mission d'intérim", who:"lina"}
+];
+let ctFilter = "tous";
+
+function renderContrats(){
+  const body = document.getElementById("ctBody");
+  const list = CONTRATS
+    .filter(e => ctFilter === "tous" || e.k === ctFilter)
+    .sort((a,b) => dParse(a.d) - dParse(b.d));
+
+  body.innerHTML = list.map(e=>{
+    const p = e.who ? st(e.who) : null;
+    const nom = p ? p.nom : e.nom;
+    const c   = p ? p.c : e.c;
+    const j   = joursAvant(e.d);
+    let delai, cls = "";
+    if(j < 0){ delai = `il y a ${-j} j`; cls = "muted"; }
+    else if(j === 0){ delai = "aujourd'hui"; cls = "danger"; }
+    else if(j <= 14){ delai = `dans ${j} j`; cls = "danger"; }
+    else if(j <= 45){ delai = `dans ${Math.round(j/7)} sem.`; cls = "warn"; }
+    else { delai = `dans ${Math.round(j/7)} sem.`; }
+    return `
+      <tr>
+        <td class="num" style="font-weight:600">${e.d}</td>
+        <td class="muted">${e.n}</td>
+        <td><div class="pname"><div class="pid"><b>${nom}</b></div></div></td>
+        <td><span class="contract ${c==="CDD"?"cdd":c==="Intérim"?"interim":""}">${c}</span></td>
+        <td class="delai ${cls}">${delai}</td>
+      </tr>`;
+  }).join("");
+
+  if(!list.length)
+    body.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:34px; color:var(--ink-3); font-weight:600">Aucune échéance sur ce filtre.</td></tr>`;
+}
+
+document.querySelectorAll("[data-ct]").forEach(b=>{
+  b.onclick = ()=>{
+    ctFilter = b.dataset.ct;
+    document.querySelectorAll("[data-ct]").forEach(x=>x.setAttribute("aria-pressed", String(x===b)));
+    renderContrats();
+  };
+});
+
+/* ============================================================
+   PRÉPARATION DE PAIE
+   ============================================================ */
+const WEEKS_PER_MONTH = 52/12;          /* semaines moyennes par mois */
+const r1 = n => n.toFixed(1).replace(".",",");
+
+/* jours d'absence et congés pris sur le mois, saisis hors planning */
+const PAY_ABS = {sand:{abs:3, cp:0}, malika:{abs:0, cp:2}, rosa:{abs:0, cp:5}, elodie:{abs:1, cp:0}};
+let payClosed = false;
+
+function payRow(p){
+  const week   = hoursOf(p.id);
+  const base   = p.h * WEEKS_PER_MONTH;
+  const done   = week * WEEKS_PER_MONTH;
+  const extra  = Math.max(0, done - base);
+  const night  = VACS.filter(v=>v.staff===p.id && v.pr==="nuit").reduce((t,v)=>t+(v.e-v.s)/60,0) * WEEKS_PER_MONTH;
+  const sunday = VACS.filter(v=>v.staff===p.id && v.day===6 && v.pr!=="nuit").reduce((t,v)=>t+(v.e-v.s)/60,0) * WEEKS_PER_MONTH;
+  const x = PAY_ABS[p.id] || {abs:0, cp:0};
+  return {p, base, done, extra, night, sunday, abs:x.abs, cp:x.cp};
+}
+
+function renderPaie(){
+  const body = document.getElementById("payBody");
+  const foot = document.getElementById("payFoot");
+  body.innerHTML = "";
+  const rows = STAFF.map(payRow);
+
+  rows.forEach(r=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>
+        <div class="pname">
+          <div class="pid"><b>${r.p.nom}</b><small>${r.p.c} · ${cap(r.p.sect)}</small></div>
+        </div>
+      </td>
+      <td class="num" style="text-align:right; color:var(--ink-3)">${r1(r.base)} h</td>
+      <td class="num" style="text-align:right; font-weight:600">${r1(r.done)} h</td>
+      <td class="num" style="text-align:right; ${r.extra?"font-weight:700":"color:var(--ink-3)"}">${r.extra ? "+"+r1(r.extra)+" h" : "—"}</td>
+      <td class="num" style="text-align:right; ${r.night?"":"color:var(--ink-3)"}">${r.night ? r1(r.night)+" h" : "—"}</td>
+      <td class="num" style="text-align:right; ${r.sunday?"":"color:var(--ink-3)"}">${r.sunday ? r1(r.sunday)+" h" : "—"}</td>
+      <td class="num" style="text-align:right; ${r.abs?"":"color:var(--ink-3)"}">${r.abs ? r.abs+" j" : "—"}</td>
+      <td class="num" style="text-align:right; ${r.cp?"":"color:var(--ink-3)"}">${r.cp ? r.cp+" j" : "—"}</td>`;
+    tr.className = "clickrow";
+    tr.tabIndex = 0;
+    tr.setAttribute("role","button");
+    tr.setAttribute("aria-label", "Détail mensuel de " + r.p.nom);
+    const open = ()=> openPayFiche(r);
+    tr.onclick = open;
+    tr.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); open(); } };
+    body.appendChild(tr);
+  });
+
+  const sum = k => rows.reduce((t,r)=>t+r[k], 0);
+  foot.innerHTML = `
+    <tr class="paytotal">
+      <td><b>Total · 12 salariés</b></td>
+      <td class="num" style="text-align:right">${r1(sum("base"))} h</td>
+      <td class="num" style="text-align:right">${r1(sum("done"))} h</td>
+      <td class="num" style="text-align:right">+${r1(sum("extra"))} h</td>
+      <td class="num" style="text-align:right">${r1(sum("night"))} h</td>
+      <td class="num" style="text-align:right">${r1(sum("sunday"))} h</td>
+      <td class="num" style="text-align:right">${sum("abs")} j</td>
+      <td class="num" style="text-align:right">${sum("cp")} j</td>
+    </tr>`;
+}
+
+function openPayFiche(r){
+  const p = r.p;
+  document.getElementById("mverdict").textContent = "Septembre 2026";
+  document.getElementById("mverdict").style.color = "var(--ink-3)";
+  document.getElementById("mtitle").textContent = p.nom;
+  document.getElementById("msub").textContent = `${p.c} · ${p.h} h par semaine · variables transmises à la paie`;
+
+  const lines = [
+    ["Heures contractuelles", `${r1(r.base)} h — ${p.h} h par semaine sur ${r1(WEEKS_PER_MONTH)} semaines`, "blue"],
+    ["Heures réalisées", `${r1(r.done)} h, issues du planning validé`, "green"],
+    [r.p.h < 35 ? "Heures complémentaires" : "Heures supplémentaires",
+      r.extra ? `${r1(r.extra)} h au-delà du contrat, à majorer selon la convention` : "Aucune sur le mois",
+      r.extra ? "orange" : "green"],
+    ["Heures de nuit", r.night ? `${r1(r.night)} h en période de nuit — compteur travailleur de nuit à surveiller` : "Aucune", r.night ? "orange" : "green"],
+    ["Dimanches et jours fériés", r.sunday ? `${r1(r.sunday)} h` : "Aucune", "blue"],
+    ["Absences", r.abs ? `${r.abs} jours — arrêt maladie, justificatif déposé` : "Aucune", r.abs ? "orange" : "green"],
+    ["Congés payés pris", r.cp ? `${r.cp} jours` : "Aucun", "blue"],
+    ["Frais de transport", `Forfait Navigo — remboursement 50 %`, "blue"]
+  ];
+
+  const body = document.getElementById("mbody");
+  body.innerHTML = "";
+  lines.forEach(([t,d,lv])=>{
+    const el = document.createElement("div");
+    el.className = "check " + lv;
+    el.innerHTML = `<div><b>${t}</b><p>${d}</p></div>`;
+    body.appendChild(el);
+  });
+
+  const foot = document.getElementById("mfoot");
+  foot.innerHTML = "";
+  const spacer = document.createElement("div"); spacer.style.flex = "1";
+  foot.append(spacer, mkBtn("Fermer","dark",close));
+  scrim.classList.add("on");
+}
+
+document.getElementById("closeMonth").onclick = ()=>{
+  payClosed = !payClosed;
+  const tag = document.getElementById("payStatus");
+  tag.textContent = payClosed ? "Mois clôturé" : "Mois en cours";
+  tag.className = "tag" + (payClosed ? " ok" : "");
+  document.getElementById("closeMonth").textContent = payClosed ? "Rouvrir le mois" : "Clôturer le mois";
+  toast(payClosed ? "Septembre clôturé — compteurs figés" : "Septembre rouvert");
+};
+
+document.getElementById("exportPay").onclick = ()=>{
+  const rows = STAFF.map(payRow);
+  const head = ["Salarie","Contrat","Heures contractuelles","Heures realisees","Heures compl/supp","Heures nuit","Dimanches et feries","Jours absence","Jours CP"];
+  const csv = [head.join(";")].concat(rows.map(r=>[
+    r.p.nom, r.p.c, r1(r.base), r1(r.done), r1(r.extra), r1(r.night), r1(r.sunday), r.abs, r.cp
+  ].join(";"))).join("\n");
+
+  document.getElementById("mverdict").textContent = "Export";
+  document.getElementById("mverdict").style.color = "var(--ink-3)";
+  document.getElementById("mtitle").textContent = "Variables de paie · septembre 2026";
+  document.getElementById("msub").textContent = "Fichier point-virgule, une ligne par salarié — à transmettre à l'expert-comptable.";
+
+  const body = document.getElementById("mbody");
+  body.innerHTML = `<pre class="csv">${csv}</pre>`;
+
+  const foot = document.getElementById("mfoot");
+  foot.innerHTML = "";
+  const spacer = document.createElement("div"); spacer.style.flex = "1";
+  foot.append(spacer,
+    mkBtn("Copier","",()=>{ navigator.clipboard?.writeText(csv); toast("Export copié dans le presse-papier"); }),
+    mkBtn("Fermer","dark",close));
+  scrim.classList.add("on");
+};
+
+/* ============================================================
+   TABLEAU DE BORD
+   ============================================================ */
+const MOIS = [
+  ["Jan",940],["Fév",985],["Mar",1010],["Avr",1005],["Mai",1060],
+  ["Juin",1095],["Juil",880],["Août",1040],["Sep",1130]
+];
+const OCCUP = [
+  ["Jan",74],["Fév",77],["Mar",80],["Avr",79],["Mai",83],
+  ["Juin",86],["Juil",69],["Août",78],["Sep",81]
+];
+const GREY = "#8E8E8C";
+
+function renderDashboard(){
+  const weekHours = VACS.reduce((t,v)=>t+(v.e-v.s)/60, 0);
+  const unfilled  = VACS.filter(v=>!v.staff);
+  const contract  = STAFF.reduce((t,p)=>t+p.h, 0);
+  const placed    = STAFF.reduce((t,p)=>t+nomHours(p.id), 0);
+  const occ       = Math.round(placed/contract*100);
+  const ytd       = MOIS.reduce((t,m)=>t+m[1], 0);
+  const byType    = t => STAFF.filter(p=>p.c===t).length;
+  const leads     = LEADS.filter(l=>l.col!=="c4" && l.col!=="c5");
+  const leadHours = leads.reduce((t,l)=>t+l.h, 0);
+
+  document.getElementById("dashTiles").innerHTML = `
+    <div class="tile">
+      <div class="lb">Intervenantes</div>
+      <div class="v num">${STAFF.length}</div>
+      <div class="sub">${byType("CDI")} CDI · ${byType("CDD")} CDD · ${byType("Intérim")} intérim</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Familles suivies</div>
+      <div class="v num">${Object.keys(FAM).length}</div>
+      <div class="sub">${famStaffTotal()} binômes actifs</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Heures cette semaine</div>
+      <div class="v num">${Math.round(weekHours)}<small> h</small></div>
+      <div class="sub">21 – 27 septembre</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Taux d'occupation</div>
+      <div class="v num">${occ}<small> %</small></div>
+      <div class="sub">${Math.round(placed)} h sur ${contract} h</div>
+    </div>
+    <div class="tile ${unfilled.length ? "alert" : ""}">
+      <div class="lb">Non pourvues</div>
+      <div class="v num">${unfilled.length}</div>
+      <div class="sub">${Math.round(unfilled.reduce((t,v)=>t+(v.e-v.s)/60,0))} h à replanifier</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Opportunités</div>
+      <div class="v num">${leads.length}</div>
+      <div class="sub">${leadHours} h hebdomadaires en jeu</div>
+    </div>`;
+
+  document.getElementById("ytdLabel").textContent = `${ytd.toLocaleString("en-US")} h depuis janvier`;
+  document.getElementById("dashChart").innerHTML = areaChart(MOIS);
+  wireChart(MOIS);
+
+  const moy = Math.round(OCCUP.reduce((t,m)=>t+m[1],0) / OCCUP.length);
+  document.getElementById("occLabel").textContent = `${moy} % en moyenne depuis janvier`;
+  document.getElementById("occChart").innerHTML =
+    areaChart(OCCUP, {color:GREY, id:"fadeOcc", unit:" %", max:100});
+  wireChart(OCCUP, "occChart", {color:GREY, unit:" %", tipColor:"#4A4A48"});
+
+  const todo = [
+    unfilled.length && ["danger", `${unfilled.length} interventions à pourvoir`,
+      "Arrêt maladie de Sandrine Meunier — 3 familles concernées", "affectation"],
+    PENDING.length && ["warn", `${PENDING.length} demandes d'absence en attente`,
+      PENDING.map(x=>x.who.split(" ")[0]).join(", "), "absences"],
+    ["", "2 contrats arrivent à échéance",
+      "Kevin Adjovi au 03/10, Élodie Vasseur au 14/10", "personnel"]
+  ].filter(Boolean);
+
+  document.getElementById("dashTodo").innerHTML = todo.map(([cls,t,d,view])=>`
+    <button class="todo ${cls}" data-goto="${view}">
+      <span><b>${t}</b><small>${d}</small></span>
+      <svg class="go" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>
+    </button>`).join("");
+  document.querySelectorAll("#dashTodo [data-goto]").forEach(b=> b.onclick = ()=> go(b.dataset.goto));
+}
+
+const famStaffTotal = () => Object.keys(FAM).reduce((t,id)=>t+famStaff(id).length, 0);
+
+/* courbe avec aplat, une seule série */
+const CW = 900, CH = 200;
+function areaChart(data, o = {}){
+  const col = o.color || "var(--navy)";
+  const id  = o.id || "fadeArea";
+  const unit = o.unit || " h";
+  const W = CW, H = CH, L = 38, R = 8, T = 10, B = 26;
+  const max = o.max || Math.ceil(Math.max(...data.map(d=>d[1])) / 200) * 200;
+  const x = i => L + i * (W - L - R) / (data.length - 1);
+  const y = v => T + (1 - v / max) * (H - T - B);
+  const pts = data.map((d,i)=>[x(i), y(d[1])]);
+  const line = pts.map((p,i)=> (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+  const area = `${line} L${x(data.length-1).toFixed(1)} ${y(0).toFixed(1)} L${L} ${y(0).toFixed(1)} Z`;
+  const ticks = [0, max/2, max];
+
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Heures réalisées par mois depuis janvier">
+    <defs>
+      <linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${col}" stop-opacity=".18"/>
+        <stop offset="100%" stop-color="${col}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    ${ticks.map(t=>`
+      <line x1="${L}" y1="${y(t).toFixed(1)}" x2="${W-R}" y2="${y(t).toFixed(1)}" stroke="var(--line)" stroke-width="1"/>
+      <text x="${L-10}" y="${(y(t)+4).toFixed(1)}" text-anchor="end" font-size="11" font-weight="500" fill="var(--ink-3)">${t}${unit}</text>`).join("")}
+    <path d="${area}" fill="url(#${id})"/>
+    <path d="${line}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <line class="guide" x1="0" y1="${T}" x2="0" y2="${(H-B).toFixed(1)}" stroke="var(--line-strong)" stroke-width="1" stroke-dasharray="3 3" opacity="0"/>
+    ${pts.map((p,i)=>`<circle class="pt" cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3"
+      fill="var(--surface)" stroke="${col}" stroke-width="2"/>`).join("")}
+    ${data.map((d,i)=>`<text x="${x(i).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink-3)">${d[0]}</text>`).join("")}
+    ${pts.map((p,i)=>{
+      const half = (W - L - R) / (data.length - 1) / 2;
+      const a = i === 0 ? L : p[0] - half;
+      const w = (i === 0 || i === data.length-1 ? half : half*2);
+      return `<rect class="band" x="${a.toFixed(1)}" y="${T}" width="${w.toFixed(1)}" height="${(H-B-T).toFixed(1)}" fill="transparent" style="cursor:pointer"/>`;
+    }).join("")}
+  </svg>
+  <div class="charttip" hidden></div>`;
+}
+
+function wireChart(data, boxId = "dashChart", o = {}){
+  const col = o.color || "var(--navy)";
+  const unit = o.unit || " h";
+  const box  = document.getElementById(boxId);
+  const svg  = box.querySelector("svg");
+  const tip  = box.querySelector(".charttip");
+  const dots = [...svg.querySelectorAll(".pt")];
+  const bands= [...svg.querySelectorAll(".band")];
+  const guide= svg.querySelector(".guide");
+
+  function show(i){
+    dots.forEach((d,j)=> d.setAttribute("r", j===i ? 5.5 : 3));
+    dots.forEach((d,j)=> d.setAttribute("fill", j===i ? col : "var(--surface)"));
+    const cx = +dots[i].getAttribute("cx"), cy = +dots[i].getAttribute("cy");
+    guide.setAttribute("x1", cx); guide.setAttribute("x2", cx);
+    guide.setAttribute("opacity", ".9");
+
+    const br = box.getBoundingClientRect(), sr = svg.getBoundingClientRect();
+    const k = sr.width / CW;
+    tip.style.left = (sr.left - br.left + cx * k) + "px";
+    tip.style.top  = (sr.top  - br.top  + cy * k) + "px";
+    tip.innerHTML = `<b>${data[i][0]} 2026</b><span>${data[i][1].toLocaleString("en-US")}${unit}</span>`;
+    tip.hidden = false;
+  }
+
+  bands.forEach((b,i)=>{ b.onclick = ()=> show(i); b.onmouseenter = ()=> show(i); });
+  function hide(){
+    dots.forEach(d=>{ d.setAttribute("r", 3); d.setAttribute("fill", "var(--surface)"); });
+    guide.setAttribute("opacity", 0);
+    tip.hidden = true;
+  }
+  box.onmouseleave = hide;
+  hide();
+  if(o.tipColor) tip.style.background = o.tipColor;
+}
+
+/* ============================================================
+   CAPACITÉ — taux d'occupation par personne
+   ============================================================ */
+const nomHours = id => VACS.filter(v=>v.titulaire===id).reduce((t,v)=>t+(v.e-v.s)/60,0);
+
+function renderCapacite(){
+  const rows = STAFF.map(p=>{
+    const h = nomHours(p.id);
+    const pc = Math.round(h / p.h * 100);
+    return {p, h, pc};
+  }).sort((a,b)=> a.pc - b.pc);
+
+  document.getElementById("capBody").innerHTML = rows.map(({p,h,pc})=>{
+    const temp = p.c !== "CDI";
+    const cls = pc > 100 ? "high" : (temp && pc < 70) ? "low" : "";
+    return `
+      <tr>
+        <td>
+          <div class="pname"><div class="pid">
+            <b>${p.nom}</b>
+            <small>${p.fin ? "jusqu'au " + p.fin : "depuis le " + p.entree}</small>
+          </div></div>
+        </td>
+        <td><span class="contract ${p.c==="CDD"?"cdd":p.c==="Intérim"?"interim":""}">${p.c}</span></td>
+        <td class="num"><span style="font-weight:600">${Math.round(h)} h</span><span style="color:var(--ink-3)"> / ${p.h} h</span></td>
+        <td>
+          <span class="occ">
+            <span class="bar"><i class="${cls}" style="width:${Math.min(100,pc)}%"></i></span>
+            <span class="pc">${pc} %</span>
+          </span>
+        </td>
+      </tr>`;
+  }).join("");
+
+  const placed   = rows.reduce((t,r)=>t+r.h, 0);
+  const contract = STAFF.reduce((t,p)=>t+p.h, 0);
+  const total    = Math.round(placed / contract * 100);
+
+  document.getElementById("capTotal").innerHTML = `
+    <span class="n num">${total} %</span>
+    <span class="lb">Taux d'occupation global
+      <small>${Math.round(placed)} h placées sur ${contract} h contractuelles · ${STAFF.length} personnes</small>
+    </span>`;
+}
+
+/* ============================================================
+   PARTENAIRES
+   ============================================================ */
+const PARTENAIRES = [
+  {t:"Médecin", nom:"Bensaïd",   pre:"Amine",    tel:"01 43 55 12 08", sp:"Médecin généraliste",              zone:"11e", note:"Prescripteur de 4 bénéficiaires"},
+  {t:"Médecin", nom:"Coste",     pre:"Hélène",   tel:"01 45 78 30 22", sp:"Gériatrie",                        zone:"15e", note:"Évaluations de perte d'autonomie"},
+  {t:"Médecin", nom:"Mercier",   pre:"Paul",     tel:"01 42 09 66 41", sp:"Neurologue — Parkinson, Alzheimer", zone:"4e",  note:"Suit M. Behar et Mme Perrin"},
+  {t:"Kiné",    nom:"Marchand",  pre:"Julien",   tel:"06 12 44 89 03", sp:"Rééducation post-AVC",             zone:"13e", note:"Intervient au domicile"},
+  {t:"Kiné",    nom:"Lefèvre",   pre:"Sonia",    tel:"06 78 21 55 40", sp:"Kinésithérapie respiratoire",      zone:"17e", note:"Créneaux matinaux uniquement"},
+  {t:"Kiné",    nom:"Villeneuve",pre:"Marc",     tel:"06 33 07 91 27", sp:"Prévention des chutes",            zone:"20e", note:"Bilan à domicile sur demande"},
+  {t:"VTC",     nom:"Bouzid",    pre:"Karim",    tel:"06 51 88 34 12", sp:"Transport assis professionnalisé", zone:"Paris", note:"Réservation la veille"},
+  {t:"VTC",     nom:"Roche",     pre:"Émilie",   tel:"06 29 47 63 85", sp:"Véhicule adapté fauteuil roulant", zone:"Paris", note:"Deux véhicules, 7j/7"},
+  {t:"Équipement médical", nom:"Grandjean", pre:"Thomas", tel:"01 44 62 17 90", sp:"Lits médicalisés et lève-personnes", zone:"12e", note:"Livraison sous 48 h"},
+  {t:"Équipement médical", nom:"Ferrand",   pre:"Nathalie", tel:"01 47 33 28 55", sp:"Location fauteuils et déambulateurs", zone:"14e", note:"Tiers payant mutuelle"}
+];
+let partFilter = "tous";
+
+function renderPartenaires(){
+  const body = document.getElementById("partBody");
+  body.innerHTML = "";
+  const list = PARTENAIRES.filter(x=> partFilter === "tous" || x.t === partFilter);
+
+  list.forEach(x=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td><span class="contract">${x.t === "Équipement médical" ? "MATÉRIEL" : x.t.toUpperCase()}</span></td>
+      <td><b style="font-weight:600">${x.nom}</b></td>
+      <td class="muted">${x.pre}</td>
+      <td class="muted">${x.sp}</td>
+      <td class="num" style="font-weight:600">${x.tel}</td>`;
+    tr.className = "clickrow";
+    tr.tabIndex = 0;
+    tr.setAttribute("role","button");
+    tr.setAttribute("aria-label", "Ouvrir la fiche de " + x.pre + " " + x.nom);
+    const open = ()=> openPartenaire(x);
+    tr.onclick = open;
+    tr.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); open(); } };
+    body.appendChild(tr);
+  });
+
+  if(!list.length)
+    body.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:34px; color:var(--ink-3); font-weight:600">Aucun partenaire sur ce filtre.</td></tr>`;
+}
+
+function openPartenaire(x){
+  document.getElementById("mverdict").textContent = x.t;
+  document.getElementById("mverdict").style.color = "var(--ink-3)";
+  document.getElementById("mtitle").textContent = `${x.pre} ${x.nom}`;
+  document.getElementById("msub").textContent = `${x.sp} · ${x.zone}`;
+
+  const body = document.getElementById("mbody");
+  body.innerHTML = "";
+  [["Téléphone", x.tel, "blue"],
+   ["Spécialité", x.sp, "blue"],
+   ["Zone d'intervention", x.zone, "blue"],
+   ["Note", x.note, "green"]].forEach(([t,d,lv])=>{
+    const el = document.createElement("div");
+    el.className = "check " + lv;
+    el.innerHTML = `<div><b>${t}</b><p>${d}</p></div>`;
+    body.appendChild(el);
+  });
+
+  const foot = document.getElementById("mfoot");
+  foot.innerHTML = "";
+  const spacer = document.createElement("div"); spacer.style.flex = "1";
+  foot.append(spacer, mkBtn("Fermer","dark",close));
+  scrim.classList.add("on");
+}
+
+document.querySelectorAll("[data-part]").forEach(b=>{
+  b.onclick = ()=>{
+    partFilter = b.dataset.part;
+    document.querySelectorAll("[data-part]").forEach(x=>x.setAttribute("aria-pressed", String(x===b)));
+    renderPartenaires();
+  };
+});
+
+/* ============================================================
+   RECRUTEMENT — même structure que le pipeline commercial
+   ============================================================ */
+const RCOLS = [
+  {id:"r1", n:"Candidature reçue"},
+  {id:"r2", n:"Entretien"},
+  {id:"r3", n:"Vérifications"},
+  {id:"r4", n:"Recruté"},
+  {id:"r5", n:"Écarté", lost:true}
+];
+
+let CANDS = [
+  {id:"k1",  pre:"Farida",  nom:"Benali",    sp:"Aide-soignante DEAS",          c:"CDI",     col:"r1"},
+  {id:"k2",  pre:"Lucas",   nom:"Ferrand",   sp:"Titre ADVF",                   c:"CDD",     col:"r1"},
+  {id:"k3",  pre:"Mariama", nom:"Baldé",     sp:"Auxiliaire de vie · nuit",     c:"Intérim", col:"r1"},
+  {id:"k4",  pre:"Sonia",   nom:"Marchal",   sp:"DEAES · Alzheimer",            c:"CDI",     col:"r2"},
+  {id:"k5",  pre:"Ibrahim", nom:"Konaté",    sp:"Aide-soignant DEAS",           c:"Intérim", col:"r2"},
+  {id:"k6",  pre:"Claire",  nom:"Dupuis",    sp:"DEAES · mobilité et transferts", c:"CDI",   col:"r3"},
+  {id:"k7",  pre:"Rachid",  nom:"Amrani",    sp:"Auxiliaire de vie",            c:"CDD",     col:"r3"},
+  {id:"k8",  pre:"Nina",    nom:"Lopes",     sp:"DEAES · gardes de nuit",       c:"CDI",     col:"r4"},
+  {id:"k9",  pre:"Paul",    nom:"Berthier",  sp:"Sans diplôme",                 c:"CDD",     col:"r5", lost:"Habilitation toilette manquante"},
+  {id:"k10", pre:"Sophie",  nom:"Ngoma",     sp:"Titre ADVF",                   c:"Intérim", col:"r5", lost:"Hors zone d'intervention"}
+];
+
+const contractClass = c => c==="CDD" ? "cdd" : c==="Intérim" ? "interim" : "";
+
+function renderRecrut(){
+  const kb = document.getElementById("recruit");
+  kb.innerHTML = "";
+  RCOLS.forEach(c=>{
+    const items = CANDS.filter(k=>k.col===c.id);
+    const col = document.createElement("div");
+    col.className = "col" + (c.lost ? " lost" : "");
+    col.dataset.col = c.id;
+    col.innerHTML = `<div class="colhead"><b>${c.n}</b><span class="meta">${items.length}</span></div>`;
+
+    items.forEach(k=>{
+      const el = document.createElement("div");
+      el.className = "lead" + (c.lost ? " lost" : "");
+      el.draggable = true; el.dataset.id = k.id;
+      el.innerHTML = `
+        <b>${k.pre} ${k.nom}</b>
+        <div class="need">${k.sp}</div>
+        <div class="foot"><span class="contract ${contractClass(k.c)}">${k.c}</span></div>
+        ${c.lost && k.lost ? `<div class="lostwhy">${k.lost}</div>` : ""}`;
+      el.addEventListener("dragstart", e=>{ e.dataTransfer.setData("text/plain", k.id); el.classList.add("dragging"); });
+      el.addEventListener("dragend", ()=>el.classList.remove("dragging"));
+      el.onclick = ()=> openCand(k.id);
+      el.tabIndex = 0;
+      el.setAttribute("role","button");
+      el.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openCand(k.id); } };
+      col.appendChild(el);
+    });
+
+    col.addEventListener("dragover", e=>{ e.preventDefault(); col.classList.add("drop"); });
+    col.addEventListener("dragleave", ()=>col.classList.remove("drop"));
+    col.addEventListener("drop", e=>{
+      e.preventDefault(); col.classList.remove("drop");
+      const k = CANDS.find(x=>x.id === e.dataTransfer.getData("text/plain"));
+      if(!k || k.col===c.id) return;
+      k.col = c.id; renderRecrut();
+renderDashboard();
+go("dashboard");
+      toast(`${k.pre} ${k.nom} → ${c.n}`);
+    });
+    kb.appendChild(col);
+  });
+}
+
+function candForm(k){
+  const body = document.getElementById("mbody");
+  body.innerHTML = "";
+  const field = (label, html) => {
+    const w = document.createElement("label");
+    w.className = "formfield";
+    w.innerHTML = `<span>${label}</span>${html}`;
+    body.appendChild(w);
+    return w;
+  };
+  const esc = v => (v||"").replace(/"/g,"&quot;");
+  field("Prénom", `<input data-k="pre" type="text" value="${esc(k.pre)}">`);
+  field("Nom", `<input data-k="nom" type="text" value="${esc(k.nom)}">`);
+  field("Spécialité", `<input data-k="sp" type="text" placeholder="DEAES, titre ADVF, aide-soignante…" value="${esc(k.sp)}">`);
+  field("Type de contrat", `<select data-k="c">${["CDI","CDD","Intérim"].map(x=>`<option${x===k.c?" selected":""}>${x}</option>`).join("")}</select>`);
+  field("Étape", `<select data-k="col">${RCOLS.map(c=>`<option value="${c.id}"${c.id===k.col?" selected":""}>${c.n}</option>`).join("")}</select>`);
+  const lostW = field("Motif d'écartement", `<input data-k="lost" type="text" placeholder="Diplôme manquant, hors zone, sans suite…" value="${esc(k.lost)}">`);
+  lostW.hidden = k.col !== "r5";
+  body.querySelector('[data-k="col"]').onchange = e=>{ lostW.hidden = e.target.value !== "r5"; };
+  return k2 => {
+    const get = x => body.querySelector(`[data-k="${x}"]`).value.trim();
+    if(!get("nom")){ body.querySelector('[data-k="nom"]').focus(); toast("Le nom est obligatoire."); return false; }
+    k2.pre = get("pre"); k2.nom = get("nom");
+    k2.sp  = get("sp") || "Spécialité à préciser";
+    k2.c   = get("c");  k2.col = get("col");
+    k2.lost = k2.col === "r5" ? (get("lost") || "Sans suite") : undefined;
+    return true;
+  };
+}
+
+function openCand(id){
+  const k = CANDS.find(x=>x.id===id);
+  if(!k) return;
+  document.getElementById("mverdict").textContent = "Candidature";
+  document.getElementById("mverdict").style.color = "var(--ink-3)";
+  document.getElementById("mtitle").textContent = `${k.pre} ${k.nom}`;
+  document.getElementById("msub").textContent = RCOLS.find(c=>c.id===k.col).n;
+  const save = candForm(k);
+
+  const foot = document.getElementById("mfoot");
+  foot.innerHTML = "";
+  const del = mkBtn("Supprimer","",()=>{
+    CANDS.splice(CANDS.indexOf(k),1);
+    close(); renderRecrut();
+renderDashboard();
+go("dashboard"); toast(`${k.pre} ${k.nom} supprimée`);
+  });
+  del.style.color = "var(--danger)";
+  const spacer = document.createElement("div"); spacer.style.flex = "1";
+  foot.append(del, spacer, mkBtn("Annuler","",close), mkBtn("Enregistrer","dark",()=>{
+    if(!save(k)) return;
+    close(); renderRecrut();
+renderDashboard();
+go("dashboard"); toast("Candidature mise à jour");
+  }));
+  scrim.classList.add("on");
+}
+
+document.getElementById("newCandBtn").onclick = ()=>{
+  const draft = {id:"k"+Date.now(), pre:"", nom:"", sp:"", c:"CDI", col:"r1"};
+  document.getElementById("mverdict").textContent = "Nouvelle candidature";
+  document.getElementById("mverdict").style.color = "var(--ink-3)";
+  document.getElementById("mtitle").textContent = "Ajouter une candidature";
+  document.getElementById("msub").textContent = "Elle sera créée dans la colonne « Candidature reçue ».";
+  const save = candForm(draft);
+
+  const foot = document.getElementById("mfoot");
+  foot.innerHTML = "";
+  const spacer = document.createElement("div"); spacer.style.flex = "1";
+  foot.append(spacer, mkBtn("Annuler","",close), mkBtn("Créer","dark",()=>{
+    if(!save(draft)) return;
+    CANDS.unshift(draft);
+    close(); renderRecrut();
+renderDashboard();
+go("dashboard"); toast(`${draft.pre} ${draft.nom} ajoutée`);
+  }));
+  scrim.classList.add("on");
+  setTimeout(()=>document.querySelector('[data-k="pre"]').focus(), 60);
+};
+
+/* ============================================================
+   INTÉGRATIONS
+   ============================================================ */
+const MARKS = {
+  slack:  '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M9 3v9M15 12v9M3 15h9M12 9h9"/><circle cx="9" cy="15" r="1.4" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1.4" fill="currentColor" stroke="none"/></svg>',
+  gmail:  '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M3 7l9 6 9-6"/></svg>',
+  gcal:   '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2.5"/><path d="M8 3v4M16 3v4M3 10h18"/><rect x="7" y="13" width="4" height="4" rx="1" fill="currentColor" stroke="none"/></svg>',
+  trello: '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><rect x="6.5" y="6.5" width="4.5" height="10" rx="1" fill="currentColor" stroke="none"/><rect x="13" y="6.5" width="4.5" height="6" rx="1" fill="currentColor" stroke="none"/></svg>'
+};
+
+const INTEGS = [
+  {k:"slack",  n:"Slack",          d:"Alertes du planning poussées dans un canal", on:true},
+  {k:"gcal",   n:"Google Calendar",d:"Le planning publié se synchronise en lecture", on:true},
+  {k:"gmail",  n:"Gmail",          d:"Envoi des plannings et des devis aux familles", on:false},
+  {k:"trello", n:"Trello",         d:"Les opportunités remontent dans un tableau", on:false}
+];
+
+function renderIntegs(){
+  const list = document.getElementById("integList");
+  list.innerHTML = "";
+  INTEGS.forEach((x,i)=>{
+    const el = document.createElement("div");
+    el.className = "integ";
+    el.innerHTML = `
+      <span class="mark">${MARKS[x.k]}</span>
+      <div class="body"><b>${x.n}</b><small>${x.d}</small></div>
+      <button class="switch" role="switch" aria-checked="${x.on}"
+              aria-label="${x.on ? "Déconnecter" : "Connecter"} ${x.n}"
+              title="${x.on ? "Connecté — cliquer pour déconnecter" : "Non connecté — cliquer pour connecter"}"><i></i></button>`;
+    el.querySelector(".switch").onclick = ()=>{
+      INTEGS[i].on = !INTEGS[i].on;
+      renderIntegs();
+      toast(`${x.n} ${INTEGS[i].on ? "connecté" : "déconnecté"}`);
+    };
+    list.appendChild(el);
+  });
+
+}
+
+/* ============================================================
+   PROSPECTS — kanban
+   ============================================================ */
+const COLS = [
+  {id:"c1", n:"Nouveau contact"},
+  {id:"c2", n:"Évaluation à domicile"},
+  {id:"c3", n:"Devis envoyé"},
+  {id:"c4", n:"Client"},
+  {id:"c5", n:"Perdu", lost:true}
+];
+let LEADS = [
+  {id:"l1", n:"M. et Mme Lévy", a:"16e", need:"Aide au lever, 2 passages/jour", h:10, src:"Médecin traitant", d:"il y a 2 j", col:"c1"},
+  {id:"l2", n:"Mme Sarr", a:"18e", need:"Surveillance post-opératoire", h:6, src:"Site web", d:"il y a 5 j", col:"c1"},
+  {id:"l3", n:"M. Tanguy", a:"13e", need:"Accompagnement aux rendez-vous médicaux", h:4, src:"Mairie", d:"hier", col:"c1"},
+  {id:"l4", n:"M. Chevalier", a:"12e", need:"Retour d'hospitalisation", h:14, src:"CPAM · PRADO", d:"hier", col:"c2"},
+  {id:"l5", n:"Mme Ostermann", a:"15e", need:"Alzheimer, présence continue", h:20, src:"Bouche-à-oreille", d:"il y a 3 j", col:"c2"},
+  {id:"l6", n:"Famille Renard", a:"17e", need:"Gardes de nuit", h:35, src:"Assurance dépendance", d:"il y a 6 j", col:"c3"},
+  {id:"l7", n:"Mme Bouaziz", a:"11e", need:"Toilette quotidienne", h:12, src:"Caisse de retraite", d:"il y a 8 j", col:"c3"},
+  {id:"l8", n:"M. Faucher", a:"14e", need:"Aide aux repas et traitements", h:8, src:"Site web", d:"il y a 12 j", col:"c4"},
+  {id:"l9", n:"Mme Kessler", a:"20e", need:"Aide au lever et mobilité", h:9, src:"Médecin traitant", d:"il y a 15 j", col:"c4"},
+  {id:"l10", n:"M. Prigent", a:"19e", need:"Aide ponctuelle à la toilette", h:3, src:"Site web", d:"il y a 20 j", col:"c5", lost:"Hors zone d'intervention"},
+  {id:"l11", n:"Mme Arnaud", a:"15e", need:"Garde de nuit ponctuelle", h:22, src:"Bouche-à-oreille", d:"il y a 26 j", col:"c5", lost:"Partie chez un concurrent"}
+];
+
+function renderKanban(){
+  const kb = document.getElementById("kanban");
+  kb.innerHTML = "";
+  COLS.forEach((c,ci)=>{
+    const items = LEADS.filter(l=>l.col===c.id).sort((a,b)=> b.h - a.h);
+    const hrs = items.reduce((t,l)=>t+l.h, 0);
+    const col = document.createElement("div");
+    col.className = "col" + (c.lost ? " lost" : "");
+    col.dataset.col = c.id;
+    col.innerHTML = `
+      <div class="colhead">
+        <b>${c.n}</b>
+        <span class="meta">${items.length}${c.lost ? "" : " · " + hrs + " h/sem"}</span>
+      </div>`;
+
+    items.forEach(l=>{
+      const el = document.createElement("div");
+      el.className = "lead" + (c.lost ? " lost" : "");
+      el.draggable = true; el.dataset.id = l.id;
+      el.innerHTML = `
+        <b>${l.n}</b>
+        <div class="need">${l.need}</div>
+        <div class="foot"><span class="hrs num">${l.h} h/sem</span></div>
+        ${c.lost && l.lost ? `<div class="lostwhy">${l.lost}</div>` : ""}`;
+      el.addEventListener("dragstart", e=>{ e.dataTransfer.setData("text/plain", l.id); el.classList.add("dragging"); });
+      el.addEventListener("dragend", ()=>el.classList.remove("dragging"));
+      el.onclick = ()=> openLead(l.id);
+      el.tabIndex = 0;
+      el.setAttribute("role","button");
+      el.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openLead(l.id); } };
+      col.appendChild(el);
+    });
+
+    col.addEventListener("dragover", e=>{ e.preventDefault(); col.classList.add("drop"); });
+    col.addEventListener("dragleave", ()=>col.classList.remove("drop"));
+    col.addEventListener("drop", e=>{
+      e.preventDefault(); col.classList.remove("drop");
+      const l = LEADS.find(x=>x.id === e.dataTransfer.getData("text/plain"));
+      if(!l || l.col===c.id) return;
+      l.col = c.id; renderKanban();
+renderRecrut();
+renderDashboard();
+go("dashboard");
+      toast(`${l.n} → ${c.n}`);
+    });
+    kb.appendChild(col);
+  });
+}
+
+
+/* édition d'une opportunité */
+function openLead(id){
+  const l = LEADS.find(x=>x.id===id);
+  if(!l) return;
+  const col = COLS.find(c=>c.id===l.col);
+
+  document.getElementById("mverdict").textContent = "Opportunité";
+  document.getElementById("mverdict").style.color = "var(--ink-3)";
+  document.getElementById("mtitle").textContent = l.n;
+  document.getElementById("msub").textContent = col.n;
+
+  const body = document.getElementById("mbody");
+  body.innerHTML = "";
+  const field = (label, html) => {
+    const w = document.createElement("label");
+    w.className = "formfield";
+    w.innerHTML = `<span>${label}</span>${html}`;
+    body.appendChild(w);
+  };
+  field("Nom du contact", `<input data-k="n" type="text" value="${l.n.replace(/"/g,"&quot;")}">`);
+  field("Besoin exprimé", `<input data-k="need" type="text" value="${l.need.replace(/"/g,"&quot;")}">`);
+  field("Volume estimé (h/sem)", `<input data-k="h" type="number" min="0" max="60" value="${l.h}">`);
+  field("Étape", `<select data-k="col">${COLS.map(c=>`<option value="${c.id}"${c.id===l.col?" selected":""}>${c.n}</option>`).join("")}</select>`);
+  const lostWrap = document.createElement("label");
+  lostWrap.className = "formfield";
+  lostWrap.innerHTML = `<span>Motif de perte</span><input data-k="lost" type="text" placeholder="Hors zone, concurrent, sans suite…" value="${(l.lost||"").replace(/"/g,"&quot;")}">`;
+  lostWrap.hidden = l.col !== "c5";
+  body.appendChild(lostWrap);
+  body.querySelector('[data-k="col"]').onchange = e=>{ lostWrap.hidden = e.target.value !== "c5"; };
+
+  const get = k => body.querySelector(`[data-k="${k}"]`).value;
+
+  const foot = document.getElementById("mfoot");
+  foot.innerHTML = "";
+  const del = mkBtn("Supprimer","",()=>{
+    LEADS.splice(LEADS.indexOf(l),1);
+    close(); renderKanban();
+renderRecrut();
+renderDashboard();
+go("dashboard"); toast(`${l.n} supprimée`);
+  });
+  del.style.color = "var(--danger)";
+  const spacer = document.createElement("div"); spacer.style.flex = "1";
+  foot.append(del, spacer, mkBtn("Annuler","",close), mkBtn("Enregistrer","dark",()=>{
+    const nom = get("n").trim();
+    if(!nom){ body.querySelector('[data-k="n"]').focus(); toast("Le nom du contact est obligatoire."); return; }
+    l.n = nom;
+    l.need = get("need").trim() || "Besoin à qualifier";
+    l.h = Number(get("h")) || 0;
+    l.col = get("col");
+    l.lost = l.col === "c5" ? (get("lost").trim() || "Sans suite") : undefined;
+    close(); renderKanban();
+renderRecrut();
+renderDashboard();
+go("dashboard"); toast("Opportunité mise à jour");
+  }));
+  scrim.classList.add("on");
+}
+
+/* création d'une opportunité */
+const FORM = [
+  {k:"n",    l:"Nom du contact",        ph:"Mme Renaudin",                  type:"text"},
+  {k:"need", l:"Besoin exprimé",        ph:"Toilette et aide au lever, 2 passages/jour", type:"text"},
+  {k:"h",    l:"Volume estimé (h/sem)", ph:"10",                            type:"number"}
+];
+
+document.getElementById("newLeadBtn").onclick = ()=>{
+  document.getElementById("mverdict").textContent = "Nouvelle opportunité";
+  document.getElementById("mverdict").style.color = "var(--ink-3)";
+  document.getElementById("mtitle").textContent = "Ajouter une opportunité";
+  document.getElementById("msub").textContent = "Elle sera créée dans la colonne « Nouveau contact ».";
+
+  const body = document.getElementById("mbody");
+  body.innerHTML = "";
+  FORM.forEach(f=>{
+    const w = document.createElement("label");
+    w.className = "formfield";
+    const input = f.type === "select"
+      ? `<select data-k="${f.k}">${f.opts.map(o=>`<option>${o}</option>`).join("")}</select>`
+      : `<input data-k="${f.k}" type="${f.type}" placeholder="${f.ph}"${f.type==="number"?' min="1" max="60"':''}>`;
+    w.innerHTML = `<span>${f.l}</span>${input}`;
+    body.appendChild(w);
+  });
+
+  const foot = document.getElementById("mfoot");
+  foot.innerHTML = "";
+  const spacer = document.createElement("div"); spacer.style.flex = "1";
+  foot.append(spacer, mkBtn("Annuler","",close), mkBtn("Créer l'opportunité","dark",()=>{
+    const get = k => body.querySelector(`[data-k="${k}"]`).value.trim();
+    const nom = get("n");
+    if(!nom){ body.querySelector('[data-k="n"]').focus(); toast("Le nom du contact est obligatoire."); return; }
+    LEADS.unshift({
+      id:"l"+Date.now(),
+      n:nom,
+      need:get("need") || "Besoin à qualifier",
+      h:Number(get("h")) || 0,
+      col:"c1"
+    });
+    close(); renderKanban();
+renderRecrut();
+renderDashboard();
+go("dashboard"); toast(`${nom} ajoutée en nouveau contact`);
+  }));
+  scrim.classList.add("on");
+  setTimeout(()=>body.querySelector('[data-k="n"]').focus(), 60);
+};
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+const TITLES = {
+  dashboard:["Exploitation","Tableau de bord"],
+  planning:["Exploitation","Planning de la semaine"],
+  affectation:["Exploitation","Affectation des interventions"],
+  absences:["Ressources humaines","Demandes d'absence"],
+  familles:["Bénéficiaires","Familles suivies"],
+  personnel:["Ressources humaines","Personnel"],
+  contrats:["Ressources humaines","Contrats de travail"],
+  paie:["Ressources humaines","Préparation de paie"],
+  capacite:["Ressources humaines","Taux d'occupation"],
+  partenaires:["Réseau","Partenaires"],
+  prospects:["Développement","Prospects et opportunités"],
+  recrutement:["Développement","Recrutement"],
+  integrations:["Paramètres","Intégrations"]
+};
+function go(v){
+  document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on", s.id==="view-"+v));
+  document.querySelectorAll(".navitem").forEach(b=>b.setAttribute("aria-current", String(b.dataset.view===v)));
+  document.getElementById("crumb").textContent = TITLES[v][0];
+  document.getElementById("vtitle").textContent = TITLES[v][1];
+  document.querySelectorAll("#weekNav").forEach(b=>b.style.display = v==="planning" ? "" : "none");
+  window.scrollTo({top:0, behavior:"instant"});
+  if(v === "planning") renderGrid();
+}
+let rsz;
+window.addEventListener("resize", ()=>{
+  clearTimeout(rsz);
+  rsz = setTimeout(()=>{ if(document.getElementById("view-planning").classList.contains("on")) renderGrid(); }, 150);
+});
+document.querySelectorAll(".navitem").forEach(b=> b.onclick = ()=>go(b.dataset.view));
+document.querySelectorAll("[data-goto]").forEach(b=> b.onclick = ()=>go(b.dataset.goto));
+function goWeek(delta){
+  const next = wk + delta;
+  if(next < 0 || next >= WEEKS.length) return;
+  wk = next;
+  document.getElementById("weekLabel").textContent = W().label;
+  document.getElementById("prevWeek").disabled = wk === 0;
+  document.getElementById("nextWeek").disabled = wk === WEEKS.length - 1;
+  renderGrid();
+}
+document.getElementById("prevWeek").onclick = ()=> goWeek(-1);
+document.getElementById("nextWeek").onclick = ()=> goWeek(1);
+
+/* init */
+document.getElementById("prevWeek").disabled = wk === 0;
+document.getElementById("nextWeek").disabled = wk === WEEKS.length - 1;
+syncPlanControls();
+renderGrid();
+renderAbsences();
+renderAffectation();
+renderFamilles();
+renderPersonnel();
+renderContrats();
+renderPaie();
+renderCapacite();
+renderPartenaires();
+renderIntegs();
+renderKanban();
+renderRecrut();
+renderDashboard();
+go("dashboard");
+</script>
+
+</body>
+</html>
