@@ -581,7 +581,7 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
     </button>
     <button class="navitem" data-view="contrats">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
-      Contrats
+      Documents
     </button>
     <button class="navitem" data-view="paie">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M7 9h10M7 13h10M7 17h5"/></svg>
@@ -799,10 +799,15 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
       <!-- =================== CONTRATS =================== -->
       <section class="view" id="view-contrats">
         <div class="toolbar" style="margin-top:20px">
-          <button class="pill" data-ct="tous" aria-pressed="true">Toutes les échéances</button>
-          <button class="pill" data-ct="fin">Fins de contrat</button>
-          <button class="pill" data-ct="essai">Périodes d'essai</button>
-          <button class="pill" data-ct="debut">Prises de poste</button>
+          <button class="pill" data-ct="tous" aria-pressed="true">Tous les documents</button>
+          <button class="pill" data-ct="contrat">Contrats</button>
+          <button class="pill" data-ct="avenant">Avenants</button>
+          <button class="pill" data-ct="admin">Administratif</button>
+          <button class="pill" data-ct="manquant">Manquants</button>
+          <button class="btn dark" style="margin-left:auto" onclick="toast('Dépôt de document — hors périmètre du POC')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 18v2h16v-2"/></svg>
+            Déposer un document
+          </button>
         </div>
 
         <div class="tablewrap">
@@ -810,11 +815,11 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
             <table class="tbl">
               <thead>
                 <tr>
-                  <th style="width:18%">Échéance</th>
-                  <th style="width:26%">Nature</th>
                   <th style="width:28%">Intervenante</th>
-                  <th style="width:14%">Contrat</th>
-                  <th style="width:14%">Délai</th>
+                  <th style="width:28%">Document</th>
+                  <th style="width:14%">Type</th>
+                  <th style="width:15%">Déposé le</th>
+                  <th style="width:15%">Validité</th>
                 </tr>
               </thead>
               <tbody id="ctBody"></tbody>
@@ -1938,54 +1943,84 @@ document.querySelectorAll("[data-filter]").forEach(b=>{
 });
 
 /* ============================================================
-   CONTRATS — échéances à venir
+   DOCUMENTS DU PERSONNEL
    ============================================================ */
-const AUJ = new Date(2026, 8, 23);
+const AUJ = new Date(2026, 8, 25);
 const dParse = d => { const [j,m,a] = d.split("/").map(Number); return new Date(a, m-1, j); };
 const joursAvant = d => Math.round((dParse(d) - AUJ) / 86400000);
 
-const CONTRATS = [
-  {d:"30/09/2026", k:"essai", n:"Fin de période d'essai",  who:"priya"},
-  {d:"03/10/2026", k:"fin",   n:"Fin de mission d'intérim", who:"kevin"},
-  {d:"06/10/2026", k:"debut", n:"Prise de poste",           who:null, nom:"Nina Lopes", c:"CDI"},
-  {d:"10/10/2026", k:"fin",   n:"Fin de mission d'intérim", who:"lina"},
-  {d:"14/10/2026", k:"fin",   n:"Fin de CDD",               who:"elodie"},
-  {d:"30/11/2026", k:"fin",   n:"Fin de CDD",               who:"priya"},
-  {d:"31/12/2026", k:"fin",   n:"Fin de CDD",               who:"jm"},
-  {d:"01/09/2026", k:"debut", n:"Entrée en fonction",       who:"priya"},
-  {d:"14/09/2026", k:"debut", n:"Début de mission d'intérim", who:"lina"}
+/* who, type, intitulé, date de dépôt, échéance éventuelle */
+const DOCS = [
+  {who:"awa",    k:"contrat", n:"Contrat à durée indéterminée",     d:"14/03/2022"},
+  {who:"awa",    k:"avenant", n:"Avenant — passage à 35 h",         d:"02/01/2024"},
+  {who:"awa",    k:"admin",   n:"Diplôme DEAES",                    d:"14/03/2022"},
+  {who:"awa",    k:"admin",   n:"Visite médicale périodique",       d:"12/01/2024", fin:"12/01/2027"},
+
+  {who:"fatou",  k:"contrat", n:"Contrat à durée indéterminée",     d:"02/09/2021"},
+  {who:"fatou",  k:"admin",   n:"Diplôme DEAES",                    d:"02/09/2021"},
+  {who:"fatou",  k:"admin",   n:"Visite médicale périodique",       d:"08/11/2023", fin:"08/11/2026"},
+
+  {who:"sand",   k:"contrat", n:"Contrat à durée indéterminée",     d:"18/01/2023"},
+  {who:"sand",   k:"admin",   n:"Arrêt de travail",                 d:"23/09/2026", fin:"25/09/2026"},
+  {who:"sand",   k:"admin",   n:"Titre professionnel ADVF",         d:"18/01/2023"},
+
+  {who:"nadia",  k:"contrat", n:"Contrat à durée indéterminée",     d:"05/06/2020"},
+  {who:"nadia",  k:"avenant", n:"Avenant — travail de nuit",        d:"03/09/2024"},
+  {who:"nadia",  k:"admin",   n:"Suivi renforcé travail de nuit",   d:"14/10/2025", fin:"14/10/2026"},
+
+  {who:"rosa",   k:"contrat", n:"Contrat à durée indéterminée",     d:"22/11/2022"},
+  {who:"rosa",   k:"manquant",n:"Extrait de casier judiciaire B3",  d:""},
+
+  {who:"malika", k:"contrat", n:"Contrat à durée indéterminée",     d:"09/02/2019"},
+  {who:"malika", k:"avenant", n:"Avenant — spécialisation Parkinson",d:"11/04/2023"},
+  {who:"malika", k:"manquant",n:"Entretien professionnel",          d:""},
+
+  {who:"celine", k:"contrat", n:"Contrat à durée indéterminée",     d:"30/08/2024"},
+  {who:"celine", k:"admin",   n:"Permis de conduire",               d:"30/08/2024"},
+
+  {who:"jm",     k:"contrat", n:"Contrat à durée déterminée",       d:"01/07/2026", fin:"31/12/2026"},
+  {who:"elodie", k:"contrat", n:"Contrat à durée déterminée",       d:"15/04/2026", fin:"14/10/2026"},
+  {who:"elodie", k:"admin",   n:"Titre professionnel ADVF",         d:"15/04/2026"},
+  {who:"priya",  k:"contrat", n:"Contrat à durée déterminée",       d:"01/09/2026", fin:"30/11/2026"},
+  {who:"priya",  k:"manquant",n:"Attestation de formation initiale",d:""},
+
+  {who:"lina",   k:"contrat", n:"Contrat de mission d'intérim",     d:"14/09/2026", fin:"10/10/2026"},
+  {who:"kevin",  k:"contrat", n:"Contrat de mission d'intérim",     d:"07/09/2026", fin:"03/10/2026"}
 ];
+const DOC_LABEL = {contrat:"Contrat", avenant:"Avenant", admin:"Administratif", manquant:"Manquant"};
 let ctFilter = "tous";
 
 function renderContrats(){
   const body = document.getElementById("ctBody");
-  const list = CONTRATS
-    .filter(e => ctFilter === "tous" || e.k === ctFilter)
-    .sort((a,b) => dParse(a.d) - dParse(b.d));
+  const list = DOCS.filter(e => ctFilter === "tous" || e.k === ctFilter);
 
   body.innerHTML = list.map(e=>{
-    const p = e.who ? st(e.who) : null;
-    const nom = p ? p.nom : e.nom;
-    const c   = p ? p.c : e.c;
-    const j   = joursAvant(e.d);
-    let delai, cls = "";
-    if(j < 0){ delai = `il y a ${-j} j`; cls = "muted"; }
-    else if(j === 0){ delai = "aujourd'hui"; cls = "danger"; }
-    else if(j <= 14){ delai = `dans ${j} j`; cls = "danger"; }
-    else if(j <= 45){ delai = `dans ${Math.round(j/7)} sem.`; cls = "warn"; }
-    else { delai = `dans ${Math.round(j/7)} sem.`; }
+    const p = st(e.who);
+    let validite = '<span style="color:var(--ink-3)">—</span>';
+    if(e.k === "manquant"){
+      validite = `<span class="tag danger">À fournir</span>`;
+    } else if(e.fin){
+      const j = joursAvant(e.fin);
+      validite = j < 0 ? `<span class="tag">Expiré</span>`
+               : j <= 30 ? `<span class="tag warn">Expire dans ${j} j</span>`
+               : `<span class="tag ok">Jusqu'au ${e.fin}</span>`;
+    }
     return `
-      <tr>
-        <td class="num" style="font-weight:600">${e.d}</td>
+      <tr${e.k === "manquant" ? ' class="off"' : ''}>
+        <td>
+          <div class="pname"><div class="pid">
+            <b>${p.nom}</b><small>${p.c} · ${cap(p.sect)}</small>
+          </div></div>
+        </td>
         <td class="muted">${e.n}</td>
-        <td><div class="pname"><div class="pid"><b>${nom}</b></div></div></td>
-        <td><span class="contract ${c==="CDD"?"cdd":c==="Intérim"?"interim":""}">${c}</span></td>
-        <td class="delai ${cls}">${delai}</td>
+        <td><span class="contract ${e.k==="avenant"?"cdd":e.k==="manquant"?"interim":""}">${DOC_LABEL[e.k]}</span></td>
+        <td class="num" style="color:var(--ink-3)">${e.d || "—"}</td>
+        <td>${validite}</td>
       </tr>`;
   }).join("");
 
   if(!list.length)
-    body.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:34px; color:var(--ink-3); font-weight:600">Aucune échéance sur ce filtre.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:34px; color:var(--ink-3); font-weight:600">Aucun document sur ce filtre.</td></tr>`;
 }
 
 document.querySelectorAll("[data-ct]").forEach(b=>{
@@ -2796,7 +2831,7 @@ const TITLES = {
   fiscalite:["Bénéficiaires","Attestations fiscales"],
   facturation:["Bénéficiaires","Facturation"],
   personnel:["Ressources humaines","Personnel"],
-  contrats:["Ressources humaines","Contrats de travail"],
+  contrats:["Ressources humaines","Documents du personnel"],
   paie:["Ressources humaines","Préparation de paie"],
   capacite:["Ressources humaines","Taux d'occupation"],
   partenaires:["Réseau","Partenaires"],
