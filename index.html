@@ -75,7 +75,12 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
   background:var(--surface); border-right:1px solid var(--line);
   display:flex; flex-direction:column; gap:4px; padding:22px 14px;
   position:sticky; top:0; height:100vh;
+  overflow-y:auto; overscroll-behavior:contain; scrollbar-width:thin; scrollbar-color:var(--line-strong) transparent;
 }
+.sidebar::-webkit-scrollbar{width:7px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--line-strong); border-radius:4px}
+.sidebar::-webkit-scrollbar-track{background:transparent}
+.navitem, .navgroup-label, .brand{flex:none}
 .brand{display:flex; align-items:center; gap:10px; padding:0 8px 22px}
 .brand-name{font-family:var(--display); font-weight:400; font-size:18px; letter-spacing:-.025em}
 
@@ -106,7 +111,7 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
 }
 
 /* ---------- main ---------- */
-.main{min-width:0; display:flex; flex-direction:column}
+.main{min-width:0; display:flex; flex-direction:column; min-height:100vh}
 .topbar{
   display:flex; align-items:flex-end; gap:20px; padding:26px 30px 0; flex-wrap:wrap;
 }
@@ -136,6 +141,14 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
 
 .viewport{padding:22px 30px 60px; min-width:0}
 .viewport:has(#view-planning.on){padding-bottom:26px}
+/* le tableau de bord occupe toute la hauteur : les courbes absorbent la place restante */
+.viewport:has(#view-dashboard.on){padding-bottom:22px; flex:1; min-height:0; display:flex; flex-direction:column}
+#view-dashboard.on{display:flex; flex-direction:column; flex:1; min-height:0}
+#view-dashboard .charts{flex:1; min-height:200px}
+#view-dashboard .chartbox{display:flex; flex-direction:column; min-height:0}
+#view-dashboard #dashChart, #view-dashboard #occChart{flex:1; min-height:0; position:relative}
+/* le SVG ne dicte jamais la hauteur : c'est la mise en page qui la donne */
+#view-dashboard .chartbox svg{position:absolute; inset:0; width:100%; height:100%}
 .view{display:none}
 .view.on{display:block; animation:rise .32s cubic-bezier(.22,.8,.3,1) both}
 @keyframes rise{from{opacity:.4; transform:translateY(8px)} to{opacity:1; transform:none}}
@@ -295,13 +308,13 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
 .tile .sub{font-size:11px; font-weight:500; color:var(--ink-3); margin-top:3px; white-space:nowrap}
 .tile.alert .v{color:var(--danger)}
 
-.charts{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-top:14px}
+.charts{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-top:12px}
 @media(max-width:1020px){.charts{grid-template-columns:1fr}}
 .chartbox{border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); box-shadow:var(--shadow-sm); padding:17px 19px 12px; min-width:0}
 .charthead{display:flex; align-items:baseline; gap:10px; margin-bottom:4px; flex-wrap:wrap}
 .charthead h2{font-size:16px; font-weight:500}
 .charthead .cnt{margin-left:auto; font-size:12px; font-weight:600; color:var(--ink-3)}
-.chartbox svg{display:block; width:100%; height:auto; overflow:visible}
+.chartbox svg{display:block; width:100%; height:100%; overflow:visible}
 #dashChart, #occChart{position:relative}
 .charttip{
   position:absolute; transform:translate(-50%,-145%); background:var(--ink); color:#fff;
@@ -2188,7 +2201,7 @@ const OCCUP = [
   ["Jan",74],["Fév",77],["Mar",80],["Avr",79],["Mai",83],
   ["Juin",86],["Juil",69],["Août",78],["Sep",81]
 ];
-const CYAN = "#00DDFF";
+const SKY = "#2BAFF2";
 
 function renderDashboard(){
   const weekHours = VACS.reduce((t,v)=>t+(v.e-v.s)/60, 0);
@@ -2234,14 +2247,9 @@ function renderDashboard(){
     </div>`;
 
   document.getElementById("ytdLabel").textContent = `${ytd.toLocaleString("en-US")} h depuis janvier`;
-  document.getElementById("dashChart").innerHTML = areaChart(MOIS);
-  wireChart(MOIS);
-
   const moy = Math.round(OCCUP.reduce((t,m)=>t+m[1],0) / OCCUP.length);
   document.getElementById("occLabel").textContent = `${moy} % en moyenne depuis janvier`;
-  document.getElementById("occChart").innerHTML =
-    areaChart(OCCUP, {color:CYAN, id:"fadeOcc", unit:" %", max:100, fillTop:".34"});
-  wireChart(OCCUP, "occChart", {color:CYAN, unit:" %", tipColor:"#0E93B0"});
+  drawCharts();
 
   const todo = [
     unfilled.length && ["danger", `${unfilled.length} interventions à pourvoir`,
@@ -2260,6 +2268,20 @@ function renderDashboard(){
   document.querySelectorAll("#dashTodo [data-goto]").forEach(b=> b.onclick = ()=> go(b.dataset.goto));
 }
 
+/* les deux courbes occupent exactement la place laissée par la mise en page */
+function drawCharts(){
+  const a = document.getElementById("dashChart"), b = document.getElementById("occChart");
+  if(!a || !a.offsetParent) return;
+  const w = Math.max(340, Math.round(a.clientWidth));
+  const h = Math.max(180, Math.round(a.clientHeight));
+  a.innerHTML = areaChart(MOIS, {w, h});
+  wireChart(MOIS);
+  b.innerHTML = areaChart(OCCUP, {w, h, color:SKY, id:"fadeOcc", unit:" %", max:100, fillTop:".26"});
+  wireChart(OCCUP, "occChart", {color:SKY, unit:" %", tipColor:"#1281B8"});
+}
+let chartRaf;
+addEventListener("resize", ()=>{ cancelAnimationFrame(chartRaf); chartRaf = requestAnimationFrame(drawCharts); });
+
 const famStaffTotal = () => Object.keys(FAM).reduce((t,id)=>t+famStaff(id).length, 0);
 
 /* courbe avec aplat, une seule série */
@@ -2268,7 +2290,7 @@ function areaChart(data, o = {}){
   const col = o.color || "var(--accent)";
   const id  = o.id || "fadeArea";
   const unit = o.unit || " h";
-  const W = CW, H = CH, L = 40, R = 10, T = 12, B = 26;
+  const W = o.w || CW, H = o.h || CH, L = 40, R = 10, T = 12, B = 26;
   const max = o.max || Math.ceil(Math.max(...data.map(d=>d[1])) / 200) * 200;
   const x = i => L + i * (W - L - R) / (data.length - 1);
   const y = v => T + (1 - v / max) * (H - T - B);
@@ -2858,6 +2880,7 @@ function go(v){
   document.querySelectorAll("#weekNav").forEach(b=>b.style.display = v==="planning" ? "" : "none");
   window.scrollTo({top:0, behavior:"instant"});
   if(v === "planning") renderGrid();
+  if(v === "dashboard") drawCharts();
 }
 let rsz;
 window.addEventListener("resize", ()=>{
