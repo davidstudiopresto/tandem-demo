@@ -282,21 +282,23 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
 .tag.info{color:var(--info); background:linear-gradient(150deg,#EFF4FA 0%,#E2ECF7 100%); border-color:#CFDFF0}
 
 /* ---------- tableau de bord ---------- */
-.tiles{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-top:20px}
+.tiles{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-top:18px}
 @media(max-width:860px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .tile{
-  padding:18px 20px; min-width:0; background:var(--surface);
+  padding:15px 18px; min-width:0; background:var(--surface);
   border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--shadow-sm);
 }
 
 .tile .lb{font-size:10px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3); white-space:nowrap}
-.tile .v{font-family:var(--display); font-size:32px; font-weight:300; letter-spacing:-.025em; line-height:1.1; margin-top:7px}
+.tile .v{font-family:var(--display); font-size:29px; font-weight:300; letter-spacing:-.025em; line-height:1.1; margin-top:7px}
 .tile .v small{font-size:14px; font-weight:600; color:var(--ink-3); letter-spacing:0}
 .tile .sub{font-size:11px; font-weight:500; color:var(--ink-3); margin-top:3px; white-space:nowrap}
 .tile.alert .v{color:var(--danger)}
 
-.chartbox{margin-top:16px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); box-shadow:var(--shadow-sm); padding:20px 22px 14px}
-.charthead{display:flex; align-items:baseline; gap:12px; margin-bottom:6px}
+.charts{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin-top:14px}
+@media(max-width:1020px){.charts{grid-template-columns:1fr}}
+.chartbox{border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); box-shadow:var(--shadow-sm); padding:17px 19px 12px; min-width:0}
+.charthead{display:flex; align-items:baseline; gap:10px; margin-bottom:4px; flex-wrap:wrap}
 .charthead h2{font-size:16px; font-weight:500}
 .charthead .cnt{margin-left:auto; font-size:12px; font-weight:600; color:var(--ink-3)}
 .chartbox svg{display:block; width:100%; height:auto; overflow:visible}
@@ -658,21 +660,23 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
       <!-- =================== TABLEAU DE BORD =================== -->
       <section class="view on" id="view-dashboard">
         <div class="tiles" id="dashTiles"></div>
-        <div class="chartbox">
-          <div class="charthead">
-            <h2>Heures réalisées</h2>
-            <span class="cnt" id="ytdLabel"></span>
+        <div class="charts">
+          <div class="chartbox">
+            <div class="charthead">
+              <h2>Heures réalisées</h2>
+              <span class="cnt" id="ytdLabel"></span>
+            </div>
+            <div id="dashChart"></div>
           </div>
-          <div id="dashChart"></div>
-        </div>
-        <div class="chartbox">
-          <div class="charthead">
-            <h2>Taux d'occupation</h2>
-            <span class="cnt" id="occLabel"></span>
+          <div class="chartbox">
+            <div class="charthead">
+              <h2>Taux d'occupation</h2>
+              <span class="cnt" id="occLabel"></span>
+            </div>
+            <div id="occChart"></div>
           </div>
-          <div id="occChart"></div>
         </div>
-        <div class="colttl" style="margin-top:28px">À traiter</div>
+        <div class="colttl" style="margin-top:20px">À traiter</div>
         <div id="dashTodo"></div>
       </section>
 
@@ -2184,7 +2188,7 @@ const OCCUP = [
   ["Jan",74],["Fév",77],["Mar",80],["Avr",79],["Mai",83],
   ["Juin",86],["Juil",69],["Août",78],["Sep",81]
 ];
-const ORANGE = "#E6701E";
+const CYAN = "#00DDFF";
 
 function renderDashboard(){
   const weekHours = VACS.reduce((t,v)=>t+(v.e-v.s)/60, 0);
@@ -2236,8 +2240,8 @@ function renderDashboard(){
   const moy = Math.round(OCCUP.reduce((t,m)=>t+m[1],0) / OCCUP.length);
   document.getElementById("occLabel").textContent = `${moy} % en moyenne depuis janvier`;
   document.getElementById("occChart").innerHTML =
-    areaChart(OCCUP, {color:ORANGE, id:"fadeOcc", unit:" %", max:100});
-  wireChart(OCCUP, "occChart", {color:ORANGE, unit:" %", tipColor:"#B4560F"});
+    areaChart(OCCUP, {color:CYAN, id:"fadeOcc", unit:" %", max:100, fillTop:".34"});
+  wireChart(OCCUP, "occChart", {color:CYAN, unit:" %", tipColor:"#0E93B0"});
 
   const todo = [
     unfilled.length && ["danger", `${unfilled.length} interventions à pourvoir`,
@@ -2259,12 +2263,12 @@ function renderDashboard(){
 const famStaffTotal = () => Object.keys(FAM).reduce((t,id)=>t+famStaff(id).length, 0);
 
 /* courbe avec aplat, une seule série */
-const CW = 900, CH = 200;
+const CW = 470, CH = 205;
 function areaChart(data, o = {}){
   const col = o.color || "var(--accent)";
   const id  = o.id || "fadeArea";
   const unit = o.unit || " h";
-  const W = CW, H = CH, L = 38, R = 8, T = 10, B = 26;
+  const W = CW, H = CH, L = 40, R = 10, T = 12, B = 26;
   const max = o.max || Math.ceil(Math.max(...data.map(d=>d[1])) / 200) * 200;
   const x = i => L + i * (W - L - R) / (data.length - 1);
   const y = v => T + (1 - v / max) * (H - T - B);
@@ -2276,7 +2280,7 @@ function areaChart(data, o = {}){
   return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Heures réalisées par mois depuis janvier">
     <defs>
       <linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="${col}" stop-opacity=".18"/>
+        <stop offset="0%" stop-color="${col}" stop-opacity="${o.fillTop || ".18"}"/>
         <stop offset="100%" stop-color="${col}" stop-opacity="0"/>
       </linearGradient>
     </defs>
