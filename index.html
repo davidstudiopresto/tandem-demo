@@ -520,6 +520,10 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 17l2-2 2 2 2.5-3.5"/></svg>
       Fiscalité
     </button>
+    <button class="navitem" data-view="facturation">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4a1 1 0 011-1h12a1 1 0 011 1v17l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
+      Facturation
+    </button>
 
     <div class="navgroup-label">Ressources humaines</div>
     <button class="navitem" data-view="absences">
@@ -657,6 +661,13 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
       <section class="view" id="view-fiscalite">
         <div class="toolbar" style="margin-top:20px">
           <button class="btn dark" id="attBtn">Attestation fiscale</button>
+        </div>
+      </section>
+
+      <!-- =================== FACTURATION =================== -->
+      <section class="view" id="view-facturation">
+        <div class="toolbar" style="margin-top:20px">
+          <button class="btn dark" id="factBtn">Facture</button>
         </div>
       </section>
 
@@ -2723,6 +2734,7 @@ const TITLES = {
   absences:["Ressources humaines","Demandes d'absence"],
   familles:["Bénéficiaires","Familles suivies"],
   fiscalite:["Bénéficiaires","Attestations fiscales"],
+  facturation:["Bénéficiaires","Facturation"],
   personnel:["Ressources humaines","Personnel"],
   contrats:["Ressources humaines","Contrats de travail"],
   paie:["Ressources humaines","Préparation de paie"],
