@@ -2535,7 +2535,12 @@ function renderRecrut(){
     const col = document.createElement("div");
     col.className = "col" + (c.lost ? " lost" : "");
     col.dataset.col = c.id;
-    col.innerHTML = `<div class="colhead"><b>${c.n}</b><span class="meta">${items.length}</span></div>`;
+    const cdi = items.filter(k=>k.c==="CDI").length;
+    col.innerHTML = `
+      <div class="colhead">
+        <b>${c.n}</b>
+        <span class="meta">${items.length}${c.lost ? "" : " · " + cdi + " CDI"}</span>
+      </div>`;
 
     items.forEach(k=>{
       const el = document.createElement("div");
@@ -2544,7 +2549,7 @@ function renderRecrut(){
       el.innerHTML = `
         <b>${k.pre} ${k.nom}</b>
         <div class="need">${k.sp}</div>
-        <div class="foot"><span class="contract ${contractClass(k.c)}">${k.c}</span></div>
+        <div class="foot"><span class="hrs">${k.c}</span></div>
         ${c.lost && k.lost ? `<div class="lostwhy">${k.lost}</div>` : ""}`;
       el.addEventListener("dragstart", e=>{ e.dataTransfer.setData("text/plain", k.id); el.classList.add("dragging"); });
       el.addEventListener("dragend", ()=>el.classList.remove("dragging"));
