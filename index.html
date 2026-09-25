@@ -921,10 +921,9 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
             <table class="tbl">
               <thead>
                 <tr>
-                  <th style="width:32%">Intervenante</th>
-                  <th style="width:13%">Contrat</th>
-                  <th style="width:19%">Heures placées</th>
-                  <th style="width:30%">Taux d'occupation</th>
+                  <th style="width:44%">Intervenante</th>
+                  <th style="width:18%">Contrat</th>
+                  <th style="width:32%">Heures placées</th>
                   <th style="width:6%"></th>
                 </tr>
               </thead>
@@ -2398,9 +2397,7 @@ function renderCapacite(){
     return {p, h, pc};
   }).sort((a,b)=> a.pc - b.pc);
 
-  document.getElementById("capBody").innerHTML = rows.map(({p,h,pc})=>{
-    const temp = p.c !== "CDI";
-    const cls = pc > 100 ? "high" : (temp && pc < 70) ? "low" : "";
+  document.getElementById("capBody").innerHTML = rows.map(({p,h})=>{
     return `
       <tr>
         <td>
@@ -2411,12 +2408,6 @@ function renderCapacite(){
         </td>
         <td><span class="contract ${p.c==="CDD"?"cdd":p.c==="Intérim"?"interim":""}">${p.c}</span></td>
         <td class="num"><span style="font-weight:600">${Math.round(h)} h</span><span style="color:var(--ink-3)"> / ${p.h} h</span></td>
-        <td>
-          <span class="occ">
-            <span class="bar"><i class="${cls}" style="width:${Math.min(100,pc)}%"></i></span>
-            <span class="pc">${pc} %</span>
-          </span>
-        </td>
         ${EDIT_CELL}
       </tr>`;
   }).join("");
