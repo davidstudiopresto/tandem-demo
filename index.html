@@ -298,6 +298,19 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
 .todo small{font-size:11.5px; color:var(--ink-3); font-weight:500}
 .todo .go{margin-left:auto; color:var(--ink-3); flex:none}
 
+/* ---------- fiscalité ---------- */
+.att{
+  border:1px solid var(--line); border-radius:var(--r-md); padding:18px 20px; background:var(--surface-alt);
+  font-size:12.5px; line-height:1.6; color:var(--ink-2);
+}
+.att h4{font-size:14px; font-weight:500; color:var(--ink); letter-spacing:-.02em; margin-bottom:2px}
+.att .sub{font-size:11px; color:var(--ink-3); font-weight:500}
+.att dl{display:grid; grid-template-columns:auto 1fr; gap:4px 16px; margin:14px 0 0}
+.att dt{color:var(--ink-3); font-weight:500; white-space:nowrap}
+.att dd{margin:0; color:var(--ink); font-weight:500}
+.att .big{font-family:var(--display); font-size:22px; font-weight:300; letter-spacing:-.025em; color:var(--ink)}
+.att .legal{margin-top:14px; padding-top:12px; border-top:1px solid var(--line); font-size:11px; color:var(--ink-3); line-height:1.55}
+
 /* ---------- capacité ---------- */
 .kpi1{margin-top:20px; display:flex; align-items:center; gap:16px}
 .kpi1 .n{font-family:var(--display); font-size:40px; font-weight:300; letter-spacing:-.025em; line-height:1; white-space:nowrap}
@@ -516,6 +529,11 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V9.5L12 4l8 5.5V21"/><path d="M9.5 21v-6h5v6"/></svg>
       Familles
     </button>
+    <button class="navitem" data-view="fiscalite">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 17l2-2 2 2 2.5-3.5"/></svg>
+      Fiscalité
+      <span class="navbadge hot" id="nb-fisc">15</span>
+    </button>
 
     <div class="navgroup-label">Ressources humaines</div>
     <button class="navitem" data-view="absences">
@@ -645,6 +663,40 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
           <div>
             <div class="colttl" id="asgHead">Personnel disponible</div>
             <div id="asgCands"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================== FISCALITÉ =================== -->
+      <section class="view" id="view-fiscalite">
+        <div class="kpi1" id="fiscTotal"></div>
+        <div class="toolbar" style="margin-top:22px">
+          <div class="segbar">
+            <span class="seglabel">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+              Année 2025
+            </span>
+          </div>
+          <span class="tag" id="fiscDeadline">À adresser avant le 31 mars 2026</span>
+          <button class="btn dark" id="genAll" style="margin-left:auto">Générer toutes les attestations</button>
+        </div>
+
+        <div class="tablewrap">
+          <div class="tscroll">
+            <table class="tbl" style="min-width:820px">
+              <thead>
+                <tr>
+                  <th style="width:26%">Bénéficiaire</th>
+                  <th style="width:16%; text-align:right">Réglé en 2025</th>
+                  <th style="width:15%; text-align:right">Plafond</th>
+                  <th style="width:17%; text-align:right">Crédit d'impôt</th>
+                  <th style="width:14%">Mode</th>
+                  <th style="width:12%">Attestation</th>
+                </tr>
+              </thead>
+              <tbody id="fiscBody"></tbody>
+              <tfoot id="fiscFoot"></tfoot>
+            </table>
           </div>
         </div>
       </section>
@@ -1497,7 +1549,8 @@ function openVerdict(vac, targetStaff, targetDay){
 }
 function mkBtn(txt,cls,fn){const b=document.createElement("button"); b.className="btn "+cls; b.textContent=txt; b.onclick=fn; return b;}
 function close(){ scrim.classList.remove("on"); }
-function apply(vac,staff,day){ vac.staff = staff; vac.day = day; renderGrid(); renderAffectation(); renderPersonnel(); renderFamilles(); }
+function apply(vac,staff,day){ vac.staff = staff; vac.day = day; renderGrid(); renderAffectation(); renderPersonnel(); renderFamilles();
+renderFiscalite(); }
 scrim.addEventListener("click", e=>{ if(e.target===scrim) close(); });
 document.addEventListener("keydown", e=>{ if(e.key==="Escape") close(); });
 
@@ -1542,6 +1595,7 @@ function openVac(v){
     acts.push(mkBtn("Libérer l'intervention","",()=>{
       v.staff = null;
       close(); renderGrid(); renderAffectation(); renderPersonnel(); renderFamilles();
+renderFiscalite();
       toast("Intervention libérée — à pourvoir");
     }));
   } else {
@@ -1618,6 +1672,142 @@ function renderAffectation(){
     cands.appendChild(row);
   });
 }
+
+/* ============================================================
+   FISCALITÉ — attestation annuelle et crédit d'impôt
+   ============================================================ */
+const SIRET = "951 028 034 00019";
+const NOVA  = "SAP951028034";
+const SEM_FACT = 48;                 /* semaines facturées dans l'année */
+
+/* tarif horaire, plafond applicable et mode de règlement par famille */
+const FISC = {
+  delaunay:{t:28, pl:12000, mode:"avance"},   behar:{t:30, pl:20000, mode:"classique"},
+  nguyen:  {t:26, pl:12000, mode:"classique"},lecomte:{t:28, pl:15000, mode:"avance"},
+  farrugia:{t:29, pl:12000, mode:"avance"},   szabo:{t:27, pl:12000, mode:"classique"},
+  abitbol: {t:31, pl:15000, mode:"classique"},roussel:{t:28, pl:12000, mode:"avance"},
+  kowalski:{t:27, pl:12000, mode:"classique"},dasilva:{t:30, pl:12000, mode:"classique"},
+  perrin:  {t:28, pl:15000, mode:"avance"},   aitouarab:{t:28, pl:12000, mode:"avance"},
+  vidal:   {t:26, pl:12000, mode:"classique"},gonzalez:{t:29, pl:12000, mode:"avance"},
+  thibault:{t:27, pl:12000, mode:"classique"}
+};
+let ATTEST = {};                     /* id -> "genere" | "envoye" */
+
+const eur = n => n.toLocaleString("fr-FR") + " €";
+const regle = id => Math.round(famHours(id) * SEM_FACT * FISC[id].t);
+const credit = id => Math.round(Math.min(regle(id), FISC[id].pl) / 2);
+
+function renderFiscalite(){
+  const ids = Object.keys(FAM).sort((a,b)=> regle(b) - regle(a));
+  const body = document.getElementById("fiscBody");
+
+  body.innerHTML = ids.map(id=>{
+    const f = FAM[id], x = FISC[id];
+    const r = regle(id), c = credit(id);
+    const plafonne = r > x.pl;
+    const st = ATTEST[id];
+    const statut = st === "envoye" ? `<span class="tag ok">Envoyée</span>`
+                 : st === "genere" ? `<span class="tag">Générée</span>`
+                 : `<span class="tag" style="color:var(--ink-3)">À générer</span>`;
+    return `
+      <tr class="clickrow" tabindex="0" role="button" data-fisc="${id}" aria-label="Attestation de ${f.n}">
+        <td>
+          <div class="pname"><div class="pid">
+            <b>${f.n}</b><small>${f.adr}, ${f.a}</small>
+          </div></div>
+        </td>
+        <td class="num" style="text-align:right; font-weight:500">${eur(r)}</td>
+        <td class="num" style="text-align:right; color:var(--ink-3)">${eur(x.pl)}${plafonne ? " ·" : ""}</td>
+        <td class="num" style="text-align:right; font-weight:600">${eur(c)}</td>
+        <td class="muted">${x.mode === "avance" ? "Avance immédiate" : "Crédit classique"}</td>
+        <td>${statut}</td>
+      </tr>`;
+  }).join("");
+
+  body.querySelectorAll("[data-fisc]").forEach(tr=>{
+    const open = ()=> openAttestation(tr.dataset.fisc);
+    tr.onclick = open;
+    tr.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); open(); } };
+  });
+
+  const totR = ids.reduce((t,id)=>t+regle(id), 0);
+  const totC = ids.reduce((t,id)=>t+credit(id), 0);
+  const reste = ids.filter(id=>ATTEST[id] !== "envoye").length;
+
+  document.getElementById("fiscFoot").innerHTML = `
+    <tr class="paytotal">
+      <td><b>Total · ${ids.length} bénéficiaires</b></td>
+      <td class="num" style="text-align:right">${eur(totR)}</td>
+      <td></td>
+      <td class="num" style="text-align:right">${eur(totC)}</td>
+      <td colspan="2"></td>
+    </tr>`;
+
+  document.getElementById("fiscTotal").innerHTML = `
+    <span class="n num">${eur(totC)}</span>
+    <span class="lb">Crédit d'impôt ouvert à vos bénéficiaires en 2025
+      <small>${eur(totR)} réglés · ${ids.length} attestations à établir</small>
+    </span>`;
+
+  document.getElementById("nb-fisc").textContent = reste;
+  document.getElementById("nb-fisc").hidden = reste === 0;
+}
+
+function openAttestation(id){
+  const f = FAM[id], i = FAMINFO[id], x = FISC[id];
+  const r = regle(id), c = credit(id);
+  const pr = famPresta(id).map(p=>PRESTA[p].n).join(", ");
+
+  document.getElementById("mverdict").textContent = "Attestation fiscale 2025";
+  document.getElementById("mverdict").style.color = "var(--ink-3)";
+  document.getElementById("mtitle").textContent = f.n;
+  document.getElementById("msub").textContent = `${f.adr}, ${f.a} · ${x.mode === "avance" ? "avance immédiate" : "crédit d'impôt classique"}`;
+
+  document.getElementById("mbody").innerHTML = `
+    <div class="att">
+      <h4>Attestation fiscale annuelle</h4>
+      <div class="sub">Article 199 sexdecies du code général des impôts</div>
+      <dl>
+        <dt>Prestataire</dt><dd>Nena Adom — SIRET ${SIRET}</dd>
+        <dt>Déclaration SAP</dt><dd>${NOVA}</dd>
+        <dt>Bénéficiaire</dt><dd>${f.n}, ${f.adr}, ${f.a}</dd>
+        <dt>Période</dt><dd>du 1<sup>er</sup> janvier au 31 décembre 2025</dd>
+        <dt>Prestations</dt><dd>${pr}</dd>
+        <dt>Heures réalisées</dt><dd>${Math.round(famHours(id) * SEM_FACT)} h</dd>
+        <dt>Sommes réglées</dt><dd class="big">${eur(r)}</dd>
+        <dt>Plafond applicable</dt><dd>${eur(x.pl)}${r > x.pl ? " — dépassé, crédit calculé sur le plafond" : ""}</dd>
+        <dt>Crédit d'impôt</dt><dd class="big">${eur(c)}</dd>
+      </dl>
+      <div class="legal">
+        ${x.mode === "avance"
+          ? "Bénéficiaire de l'avance immédiate : la moitié du montant a déjà été déduite à chaque règlement. L'attestation reste due et sert de justificatif."
+          : "Les sommes effectivement réglées ouvrent droit à un crédit d'impôt de 50 %, dans la limite du plafond ci-dessus, à reporter en case 7DB de la déclaration de revenus."}
+        <br>Attestation à conserver par le bénéficiaire, à ne pas joindre à la déclaration.
+      </div>
+    </div>`;
+
+  const foot = document.getElementById("mfoot");
+  foot.innerHTML = "";
+  const spacer = document.createElement("div"); spacer.style.flex = "1";
+  const acts = [spacer, mkBtn("Télécharger","",()=>toast("PDF généré — hors périmètre du POC"))];
+  if(ATTEST[id] !== "envoye"){
+    acts.push(mkBtn("Envoyer au bénéficiaire","dark",()=>{
+      ATTEST[id] = "envoye";
+      close(); renderFiscalite();
+      toast(`Attestation envoyée à ${f.n}`);
+    }));
+  } else {
+    acts.push(mkBtn("Fermer","dark",close));
+  }
+  foot.append(...acts);
+  scrim.classList.add("on");
+}
+
+document.getElementById("genAll").onclick = ()=>{
+  Object.keys(FAM).forEach(id=>{ if(!ATTEST[id]) ATTEST[id] = "genere"; });
+  renderFiscalite();
+  toast("15 attestations générées — prêtes à être envoyées");
+};
 
 /* ============================================================
    ABSENCES
@@ -2711,6 +2901,7 @@ const TITLES = {
   affectation:["Exploitation","Affectation des interventions"],
   absences:["Ressources humaines","Demandes d'absence"],
   familles:["Bénéficiaires","Familles suivies"],
+  fiscalite:["Bénéficiaires","Attestations fiscales"],
   personnel:["Ressources humaines","Personnel"],
   contrats:["Ressources humaines","Contrats de travail"],
   paie:["Ressources humaines","Préparation de paie"],
@@ -2756,6 +2947,7 @@ renderGrid();
 renderAbsences();
 renderAffectation();
 renderFamilles();
+renderFiscalite();
 renderPersonnel();
 renderContrats();
 renderPaie();
