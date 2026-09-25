@@ -46,6 +46,9 @@
   --grad:linear-gradient(150deg, #29C08E 0%, #15926A 100%);
   --grad-hover:linear-gradient(150deg, #22AC7E 0%, #0F7D59 100%);
   --grad-soft:linear-gradient(150deg, #F1F9F5 0%, #DCEFE5 100%);
+  /* couleur des boutons : vert très pâle en dégradé */
+  --grad-btn:linear-gradient(135deg, #DFEDE4 0%, #F4F9F6 100%);
+  --grad-btn-hover:linear-gradient(135deg, #D2E6D9 0%, #EAF4EE 100%);
   --grad-line:linear-gradient(180deg, #29C08E 0%, #15926A 100%);
 
   /* compatibilité avec l'ancien nommage */
@@ -131,8 +134,8 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
   transition:background .14s, border-color .14s;
 }
 .btn:hover{background:var(--surface-alt); border-color:var(--ink-3)}
-.btn.dark{background:var(--grad); color:#fff; border-color:transparent; box-shadow:var(--shadow-sm)}
-.btn.dark:hover{background:var(--grad-hover); border-color:transparent}
+.btn.dark{background:var(--grad-btn); color:var(--accent-deep); border-color:var(--accent-line); box-shadow:var(--shadow-sm)}
+.btn.dark:hover{background:var(--grad-btn-hover); border-color:var(--accent)}
 .btn.icon{padding:8px 10px}
 
 .viewport{padding:22px 30px 60px; min-width:0}
@@ -149,9 +152,9 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
   font-size:13px; font-weight:600; color:var(--ink-2);
 }
 .pill:hover{border-color:var(--ink-3)}
-.pill[aria-pressed="true"]{background:var(--grad); color:#fff; border-color:transparent}
+.pill[aria-pressed="true"]{background:var(--grad-btn); color:var(--accent-deep); border-color:var(--accent-line)}
 .pill .cnt{font-size:11px; font-weight:700; background:var(--surface-sunk); color:var(--ink-2); padding:1px 6px; border-radius:4px}
-.pill[aria-pressed="true"] .cnt{background:rgba(255,255,255,.2); color:var(--surface)}
+.pill[aria-pressed="true"] .cnt{background:#fff; color:var(--accent-deep)}
 /* combobox intervenante */
 .combo{position:relative}
 .combobtn{
@@ -289,13 +292,7 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
   padding:18px 20px; min-width:0; background:var(--surface);
   border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--shadow-sm);
 }
-.tile:first-child{
-  background:var(--grad);
-  border-color:transparent; color:#fff;
-}
-.tile:first-child .lb{color:rgba(255,255,255,.72)}
-.tile:first-child .v, .tile:first-child .sub{color:#fff}
-.tile:first-child .sub{opacity:.78}
+
 .tile .lb{font-size:10px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3); white-space:nowrap}
 .tile .v{font-family:var(--display); font-size:32px; font-weight:300; letter-spacing:-.025em; line-height:1.1; margin-top:7px}
 .tile .v small{font-size:14px; font-weight:600; color:var(--ink-3); letter-spacing:0}
@@ -2145,7 +2142,7 @@ const OCCUP = [
   ["Jan",74],["Fév",77],["Mar",80],["Avr",79],["Mai",83],
   ["Juin",86],["Juil",69],["Août",78],["Sep",81]
 ];
-const GREY = "#8D9599";
+const ORANGE = "#E6701E";
 
 function renderDashboard(){
   const weekHours = VACS.reduce((t,v)=>t+(v.e-v.s)/60, 0);
@@ -2197,8 +2194,8 @@ function renderDashboard(){
   const moy = Math.round(OCCUP.reduce((t,m)=>t+m[1],0) / OCCUP.length);
   document.getElementById("occLabel").textContent = `${moy} % en moyenne depuis janvier`;
   document.getElementById("occChart").innerHTML =
-    areaChart(OCCUP, {color:GREY, id:"fadeOcc", unit:" %", max:100});
-  wireChart(OCCUP, "occChart", {color:GREY, unit:" %", tipColor:"#3E4649"});
+    areaChart(OCCUP, {color:ORANGE, id:"fadeOcc", unit:" %", max:100});
+  wireChart(OCCUP, "occChart", {color:ORANGE, unit:" %", tipColor:"#B4560F"});
 
   const todo = [
     unfilled.length && ["danger", `${unfilled.length} interventions à pourvoir`,
