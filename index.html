@@ -15,22 +15,22 @@
    Tokens : light complet sur :root, redéfinis pour les 3 états
    ============================================================ */
 :root{
-  --ground:#F0F0EE;
+  --ground:#F0F1F4;
   --surface:#FFFFFF;
-  --surface-sunk:#EFEFEC;
-  --surface-alt:#F7F7F5;
-  --ink:#14181A;
-  --ink-2:#5B6467;
-  --ink-3:#8D9599;
-  --line:#EAEAE6;
-  --line-soft:#F2F2EF;
-  --line-strong:#D9D9D4;
+  --surface-sunk:#EDEFF3;
+  --surface-alt:#F6F7FA;
+  --ink:#05090E;
+  --ink-2:#565F70;
+  --ink-3:#888F9E;
+  --line:#E7E9EE;
+  --line-soft:#F0F2F6;
+  --line-strong:#D6DAE2;
 
-  /* accent unique : vert soin */
-  --accent:#15926A;
-  --accent-deep:#0D6A4C;
-  --accent-soft:#E6F3ED;
-  --accent-line:#BDE0D0;
+  /* accent unique : bleu */
+  --accent:#1F57F5;
+  --accent-deep:#123C9E;
+  --accent-soft:#EAF1FE;
+  --accent-line:#BFD3FB;
 
   /* sémantique, en aplats doux */
   --danger:#C0392F;  --danger-soft:#FCECEA;
@@ -38,21 +38,21 @@
   --info:#2C6098;    --info-soft:#EAF1F9;
   --ok:#15926A;      --ok-soft:#E6F3ED;
 
-  /* aucun aplat vif : tout remplissage vert est un dégradé */
-  --grad:linear-gradient(150deg, #29C08E 0%, #15926A 100%);
-  --grad-hover:linear-gradient(150deg, #22AC7E 0%, #0F7D59 100%);
-  --grad-soft:linear-gradient(150deg, #F1F9F5 0%, #DCEFE5 100%);
-  /* couleur des boutons : vert très pâle en dégradé */
-  --grad-btn:linear-gradient(135deg, #DFEDE4 0%, #F4F9F6 100%);
-  --grad-btn-hover:linear-gradient(135deg, #D2E6D9 0%, #EAF4EE 100%);
-  --grad-line:linear-gradient(180deg, #29C08E 0%, #15926A 100%);
+  /* aucun aplat vif : tout remplissage bleu est un dégradé */
+  --grad:linear-gradient(150deg, #2BAFF2 0%, #1F57F5 100%);
+  --grad-hover:linear-gradient(150deg, #1E9FE4 0%, #1747D8 100%);
+  --grad-soft:linear-gradient(150deg, #F3F8FF 0%, #DCE8FE 100%);
+  /* couleur des boutons : bleu très pâle en dégradé */
+  --grad-btn:linear-gradient(135deg, #DDE9FE 0%, #F4F8FF 100%);
+  --grad-btn-hover:linear-gradient(135deg, #CEDEFC 0%, #E9F1FE 100%);
+  --grad-line:linear-gradient(180deg, #2BAFF2 0%, #1F57F5 100%);
 
   /* compatibilité avec l'ancien nommage */
-  --navy:#15926A; --navy-hover:#0D6A4C;
+  --navy:#1F57F5; --navy-hover:#123C9E;
 
-  --shadow-sm:0 1px 2px rgba(20,24,26,.04);
-  --shadow-md:0 4px 16px rgba(20,24,26,.07);
-  --shadow-lg:0 20px 56px rgba(20,24,26,.16);
+  --shadow-sm:0 1px 2px rgba(5,9,14,.05);
+  --shadow-md:0 4px 16px rgba(5,9,14,.08);
+  --shadow-lg:0 20px 56px rgba(5,9,14,.16);
 
   --r-sm:10px; --r-md:14px; --r-lg:20px; --r-xl:24px;
   --sans:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;
@@ -276,7 +276,7 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
   padding:4px 11px; border-radius:99px; border:1px solid var(--line);
   color:var(--ink-2); background:var(--surface-alt); white-space:nowrap;
 }
-.tag.ok{color:var(--accent-deep); background:var(--grad-soft); border-color:var(--accent-line)}
+.tag.ok{color:#0D6A4C; background:linear-gradient(150deg,#F1F9F5 0%,#DCEFE5 100%); border-color:#BDE0D0}
 .tag.danger{color:var(--danger); background:linear-gradient(150deg,#FDF1EF 0%,#F9E2DE 100%); border-color:#F2D4D0}
 .tag.warn{color:var(--warn); background:linear-gradient(150deg,#FEF7EC 0%,#FBEDD5 100%); border-color:#EEDCBA}
 .tag.info{color:var(--info); background:linear-gradient(150deg,#EFF4FA 0%,#E2ECF7 100%); border-color:#CFDFF0}
@@ -304,7 +304,7 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
 .charttip{
   position:absolute; transform:translate(-50%,-145%); background:var(--ink); color:#fff;
   padding:6px 10px 7px; border-radius:7px; white-space:nowrap; pointer-events:none;
-  box-shadow:0 4px 14px rgba(20,19,15,.2); text-align:center;
+  box-shadow:0 4px 14px rgba(5,9,14,.22); text-align:center;
 }
 .charttip b{display:block; font-size:10px; font-weight:600; opacity:.6; letter-spacing:.04em; text-transform:uppercase}
 .charttip span{font-size:13.5px; font-weight:700; font-variant-numeric:tabular-nums}
@@ -535,7 +535,7 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
 
 .toast{
   position:fixed; bottom:22px; left:50%; transform:translate(-50%,90px);
-  background:var(--navy); color:#fff; padding:12px 18px; border-radius:var(--r-sm);
+  background:var(--grad); color:#fff; padding:12px 18px; border-radius:var(--r-sm);
   font-size:13px; font-weight:600; box-shadow:var(--shadow-lg); z-index:60; transition:transform .3s cubic-bezier(.2,.9,.3,1);
   display:flex; align-items:center; gap:9px;
 }
