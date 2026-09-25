@@ -19,18 +19,20 @@
    Tokens : light complet sur :root, redéfinis pour les 3 états
    ============================================================ */
 :root{
-  --ground:#F4F4F3;
+  --ground:#F6F5F4;
   --surface:#FFFFFF;
-  --surface-sunk:#EAEAE9;
-  --surface-alt:#FAFAFA;
-  --ink:#131313;
+  --surface-sunk:#EDEBE9;
+  --surface-alt:#FBFAF9;
+  --ink:#18191B;
   --navy:#1C2B4A;
   --navy-hover:#27395E;
-  --ink-2:#545453;
-  --ink-3:#8E8E8C;
-  --line:#E6E6E4;
-  --line-soft:#EFEFED;
-  --line-strong:#D2D2D0;
+  --hot:#FF3C00;
+  --hot-hover:#E63600;
+  --ink-2:#56575A;
+  --ink-3:#8C8D90;
+  --line:#E7E5E2;
+  --line-soft:#F0EEEB;
+  --line-strong:#D6D3CF;
 
   /* sémantique : utilisée en filet, point ou texte — jamais en aplat */
   --danger:#A63B2E;
@@ -42,7 +44,7 @@
   --shadow-md:0 2px 10px rgba(20,19,15,.05);
   --shadow-lg:0 18px 48px rgba(20,19,15,.14);
 
-  --r-sm:7px; --r-md:11px; --r-lg:14px; --r-xl:16px;
+  --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:18px;
   --sans:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;
   --display:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;
 }
@@ -54,7 +56,7 @@ body{
 }
 button{font-family:inherit; font-size:inherit; color:inherit; cursor:pointer; border:0; background:none}
 :focus-visible{outline:2px solid var(--navy); outline-offset:2px; border-radius:6px}
-h1,h2,h3,h4{font-family:var(--display); font-weight:600; margin:0; text-wrap:balance; letter-spacing:-.03em}
+h1,h2,h3,h4{font-family:var(--display); font-weight:500; margin:0; text-wrap:balance; letter-spacing:-.04em}
 .num{font-variant-numeric:tabular-nums}
 
 /* ---------- shell ---------- */
@@ -65,7 +67,7 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:600; margin:0; text-wrap:bal
   position:sticky; top:0; height:100vh;
 }
 .brand{display:flex; align-items:center; gap:10px; padding:0 8px 22px}
-.brand-name{font-family:var(--display); font-weight:600; font-size:17px; letter-spacing:-.03em}
+.brand-name{font-family:var(--display); font-weight:500; font-size:18px; letter-spacing:-.04em}
 
 .navitem{
   display:flex; align-items:center; gap:11px; width:100%;
@@ -114,8 +116,8 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:600; margin:0; text-wrap:bal
   transition:background .14s, border-color .14s;
 }
 .btn:hover{background:var(--surface-alt); border-color:var(--ink-3)}
-.btn.dark{background:var(--navy); color:#fff; border-color:var(--navy)}
-.btn.dark:hover{background:var(--navy-hover); border-color:var(--navy-hover)}
+.btn.dark{background:var(--hot); color:#fff; border-color:var(--hot)}
+.btn.dark:hover{background:var(--hot-hover); border-color:var(--hot-hover)}
 .btn.icon{padding:8px 10px}
 
 .viewport{padding:22px 30px 60px; min-width:0}
@@ -188,7 +190,7 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:600; margin:0; text-wrap:bal
 .calhead > div{padding:9px 12px 10px; border-left:1px solid var(--line-soft)}
 .calhead > div:first-child{border-left:0}
 .calhead .dow{font-size:9.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3)}
-.calhead .dnum{font-family:var(--display); font-size:15px; font-weight:600; letter-spacing:-.03em; line-height:1.2; margin-top:1px}
+.calhead .dnum{font-family:var(--display); font-size:16px; font-weight:500; letter-spacing:-.04em; line-height:1.2; margin-top:1px}
 .calhead .today .dow, .calhead .today .dnum{color:var(--navy)}
 
 .calscroll{max-height:min(66vh,720px); overflow-y:auto; overflow-x:hidden}
@@ -262,14 +264,14 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:600; margin:0; text-wrap:bal
 .tile:nth-child(3n+1){border-left:0}
 .tile:nth-child(n+4){border-top:1px solid var(--line)}
 .tile .lb{font-size:10px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3); white-space:nowrap}
-.tile .v{font-family:var(--display); font-size:27px; font-weight:600; letter-spacing:-.04em; line-height:1.15; margin-top:6px}
+.tile .v{font-family:var(--display); font-size:30px; font-weight:500; letter-spacing:-.05em; line-height:1.15; margin-top:6px}
 .tile .v small{font-size:14px; font-weight:600; color:var(--ink-3); letter-spacing:0}
 .tile .sub{font-size:11px; font-weight:500; color:var(--ink-3); margin-top:3px; white-space:nowrap}
 .tile.alert .v{color:var(--danger)}
 
 .chartbox{margin-top:26px; border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); padding:18px 20px 12px}
 .charthead{display:flex; align-items:baseline; gap:12px; margin-bottom:6px}
-.charthead h2{font-size:15px; font-weight:600}
+.charthead h2{font-size:16px; font-weight:500}
 .charthead .cnt{margin-left:auto; font-size:12px; font-weight:600; color:var(--ink-3)}
 .chartbox svg{display:block; width:100%; height:auto; overflow:visible}
 #dashChart, #occChart{position:relative}
@@ -297,7 +299,7 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:600; margin:0; text-wrap:bal
 
 /* ---------- capacité ---------- */
 .kpi1{margin-top:20px; display:flex; align-items:center; gap:16px}
-.kpi1 .n{font-family:var(--display); font-size:34px; font-weight:600; letter-spacing:-.04em; line-height:1; white-space:nowrap}
+.kpi1 .n{font-family:var(--display); font-size:38px; font-weight:500; letter-spacing:-.05em; line-height:1; white-space:nowrap}
 .kpi1 .lb{font-size:12.5px; font-weight:600; color:var(--ink-2); line-height:1.35}
 .kpi1 .lb small{display:block; font-size:11.5px; font-weight:500; color:var(--ink-3); margin-top:2px}
 .occ{display:flex; align-items:center; gap:10px}
@@ -386,7 +388,7 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:600; margin:0; text-wrap:bal
 .lostwhy{font-size:10.5px; font-weight:600; color:var(--ink-3); margin-top:7px}
 .col.drop{background:var(--surface-sunk); box-shadow:inset 0 0 0 1px var(--navy)}
 .colhead{display:flex; flex-direction:column; gap:1px; padding:4px 6px 12px}
-.colhead b{font-size:13px; font-weight:600; letter-spacing:-.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.colhead b{font-size:13.5px; font-weight:500; letter-spacing:-.03em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .colhead .meta{font-size:10.5px; font-weight:600; color:var(--ink-3); white-space:nowrap}
 .lead{
   background:var(--surface); border:1px solid var(--line); border-radius:var(--r-md); padding:11px 12px;
@@ -396,7 +398,7 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:600; margin:0; text-wrap:bal
 .lead:focus-visible{outline:2px solid var(--navy); outline-offset:2px}
 .lead:hover{border-color:var(--line-strong); box-shadow:var(--shadow-md)}
 .lead.dragging{opacity:.4}
-.lead b{font-size:13.5px; font-weight:600; letter-spacing:-.02em; display:block; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.lead b{font-size:14px; font-weight:500; letter-spacing:-.03em; display:block; line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .lead .need{
   font-size:11.5px; color:var(--ink-3); margin-top:2px; font-weight:500;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
@@ -445,7 +447,7 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:600; margin:0; text-wrap:bal
 @keyframes pop{from{opacity:0; transform:translateY(14px) scale(.97)} to{opacity:1; transform:none}}
 .mhead{padding:20px 22px 16px; border-bottom:1px solid var(--line)}
 .mhead .verdict{font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase}
-.mhead h3{font-size:20px; font-weight:700; margin-top:4px}
+.mhead h3{font-size:22px; font-weight:500; margin-top:4px}
 .mhead p{margin:5px 0 0; font-size:13px; color:var(--ink-2)}
 .mbody{padding:16px 22px; display:flex; flex-direction:column; gap:9px; max-height:46vh; overflow-y:auto}
 .check{
