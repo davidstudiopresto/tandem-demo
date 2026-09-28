@@ -342,6 +342,22 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
 .todo small{font-size:11.5px; color:var(--ink-3); font-weight:500}
 .todo .go{margin-left:auto; color:var(--ink-3); flex:none}
 
+/* ---------- cahier de liaison ---------- */
+.feed{
+  margin-top:16px; background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r-lg); box-shadow:var(--shadow-sm); overflow:hidden;
+}
+.tr-item{display:flex; gap:16px; padding:15px 20px; border-bottom:1px solid var(--line-soft)}
+.tr-item:last-child{border-bottom:0}
+.tr-item.alerte{background:linear-gradient(150deg,#FDF6F5 0%,#FFFFFF 62%)}
+.tr-when{width:104px; flex:none; font-size:11.5px; font-weight:600; color:var(--ink-3); font-variant-numeric:tabular-nums; padding-top:1px}
+.tr-body{flex:1; min-width:0}
+.tr-body b{font-size:13px; font-weight:600}
+.tr-body b span{font-weight:500; color:var(--ink-3)}
+.tr-body p{font-size:12.5px; color:var(--ink-2); font-weight:500; line-height:1.5; margin-top:3px}
+.tr-meta{flex:none; display:flex; align-items:flex-start; gap:8px; padding-top:1px}
+.tr-seen{font-size:11px; font-weight:600; color:var(--ink-3); white-space:nowrap; padding-top:5px}
+
 /* ---------- écrans à venir : aperçu flouté ---------- */
 .ghost{
   filter:blur(5px); opacity:.5; pointer-events:none; user-select:none;
@@ -609,6 +625,10 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 17l2-2 2 2 2.5-3.5"/></svg>
       Fiscalité
     </button>
+    <button class="navitem" data-view="devis">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
+      Devis
+    </button>
     <button class="navitem" data-view="facturation">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4a1 1 0 011-1h12a1 1 0 011 1v17l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
       Facturation
@@ -635,6 +655,17 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
     <button class="navitem" data-view="capacite">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
       Occupation
+    </button>
+
+    <div class="navgroup-label">Qualité</div>
+    <button class="navitem" data-view="qualite">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 3v6c0 4.4-3 8.1-7.5 9-4.5-.9-7.5-4.6-7.5-9V6z"/><path d="M9.2 12.2l2 2 3.6-4"/></svg>
+      Réclamations
+      <span class="navbadge hot">4</span>
+    </button>
+    <button class="navitem" data-view="liaison">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.5 1.5 0 015.5 4H19a1 1 0 011 1v14a1 1 0 01-1 1H5.5A1.5 1.5 0 014 18.5z"/><path d="M8 4v16M11.5 9h5M11.5 13h3"/></svg>
+      Cahier de liaison
     </button>
 
     <div class="navgroup-label">Réseau</div>
@@ -813,6 +844,87 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
             </table>
           </div>
         </div>
+      </section>
+
+      <!-- =================== DEVIS =================== -->
+      <section class="view" id="view-devis">
+        <div class="tiles tiles-4" id="devTiles"></div>
+        <div class="toolbar" style="margin-top:16px">
+          <button class="pill" data-dv="tous" aria-pressed="true">Tous</button>
+          <button class="pill" data-dv="attente">En attente</button>
+          <button class="pill" data-dv="accepte">Acceptés</button>
+          <button class="pill" data-dv="refuse">Refusés</button>
+          <button class="btn dark" style="margin-left:auto" onclick="toast('Nouveau devis — hors périmètre du POC')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Établir un devis
+          </button>
+        </div>
+        <div class="tablewrap">
+          <div class="tscroll">
+            <table class="tbl" style="min-width:940px">
+              <thead>
+                <tr>
+                  <th style="width:21%">Bénéficiaire</th>
+                  <th style="width:22%">Besoin</th>
+                  <th style="width:9%; text-align:right">Heures</th>
+                  <th style="width:12%; text-align:right">Mensuel</th>
+                  <th style="width:12%; text-align:right">Reste à charge</th>
+                  <th style="width:11%">Validité</th>
+                  <th style="width:13%">Statut</th>
+                </tr>
+              </thead>
+              <tbody id="devBody"></tbody>
+              <tfoot id="devFoot"></tfoot>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================== QUALITÉ =================== -->
+      <section class="view" id="view-qualite">
+        <div class="tiles tiles-4" id="qTiles"></div>
+        <div class="toolbar" style="margin-top:16px">
+          <button class="pill" data-q="tous" aria-pressed="true">Tout</button>
+          <button class="pill" data-q="reclamation">Réclamations</button>
+          <button class="pill" data-q="ei">Événements indésirables</button>
+          <button class="pill" data-q="ouvert">À traiter</button>
+          <button class="btn dark" style="margin-left:auto" onclick="toast('Déclaration — hors périmètre du POC')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Déclarer
+          </button>
+        </div>
+        <div class="tablewrap">
+          <div class="tscroll">
+            <table class="tbl" style="min-width:960px">
+              <thead>
+                <tr>
+                  <th style="width:10%">Date</th>
+                  <th style="width:12%">Nature</th>
+                  <th style="width:17%">Bénéficiaire</th>
+                  <th style="width:28%">Objet</th>
+                  <th style="width:10%">Gravité</th>
+                  <th style="width:11%">Suivi par</th>
+                  <th style="width:11%">Statut</th>
+                </tr>
+              </thead>
+              <tbody id="qBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================== CAHIER DE LIAISON =================== -->
+      <section class="view" id="view-liaison">
+        <div class="toolbar" style="margin-top:20px">
+          <button class="pill" data-li="tous" aria-pressed="true">Toutes</button>
+          <button class="pill" data-li="alerte">Alertes</button>
+          <button class="pill" data-li="famille">Vues par la famille</button>
+          <button class="btn dark" style="margin-left:auto" onclick="toast('Nouvelle transmission — hors périmètre du POC')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+            Écrire une transmission
+          </button>
+        </div>
+        <div class="feed" id="liFeed"></div>
       </section>
 
       <!-- =================== TÉLÉGESTION =================== -->
@@ -3114,6 +3226,244 @@ document.querySelectorAll("[data-tg]").forEach(b=>{
   };
 });
 
+
+/* ============================================================
+   DEVIS
+   ============================================================ */
+const DEVIS = [
+  {n:"M. et Mme Lévy",  a:"16e", need:"Aide au lever, 2 passages par jour", h:10, pec:.45, d:"22/09/2026", st:"attente"},
+  {n:"Mme Sarr",        a:"18e", need:"Surveillance post-opératoire",        h:6,  pec:0,   d:"20/09/2026", st:"attente"},
+  {n:"M. Chevalier",    a:"12e", need:"Retour d'hospitalisation",            h:14, pec:.60, d:"24/09/2026", st:"attente"},
+  {n:"Mme Ostermann",   a:"15e", need:"Alzheimer, présence continue",        h:20, pec:.55, d:"18/09/2026", st:"attente"},
+  {n:"Famille Renard",  a:"17e", need:"Gardes de nuit",                      h:35, pec:0,   d:"15/09/2026", st:"accepte"},
+  {n:"Mme Bouaziz",     a:"11e", need:"Toilette quotidienne",                h:12, pec:.50, d:"12/09/2026", st:"accepte"},
+  {n:"M. Faucher",      a:"14e", need:"Aide aux repas et traitements",       h:8,  pec:.38, d:"08/09/2026", st:"accepte"},
+  {n:"M. Prigent",      a:"19e", need:"Aide ponctuelle à la toilette",       h:3,  pec:0,   d:"01/09/2026", st:"refuse", why:"Hors zone d'intervention"},
+  {n:"Mme Arnaud",      a:"15e", need:"Garde de nuit ponctuelle",            h:22, pec:.30, d:"28/08/2026", st:"refuse", why:"Partie chez un concurrent"}
+];
+const DEV_ST = {attente:"En attente", accepte:"Accepté", refuse:"Refusé"};
+let dvFilter = "tous";
+
+const devMontant = d => d.h * WEEKS_PER_MONTH * 28;
+
+function renderDevis(){
+  const enCours = DEVIS.filter(d=>d.st==="attente");
+  const gagnes  = DEVIS.filter(d=>d.st==="accepte");
+  const taux = Math.round(gagnes.length / DEVIS.filter(d=>d.st!=="attente").length * 100);
+
+  document.getElementById("devTiles").innerHTML = `
+    <div class="tile">
+      <div class="lb">Devis en attente</div>
+      <div class="v num">${enCours.length}</div>
+      <div class="sub">${enCours.reduce((t,d)=>t+d.h,0)} h hebdomadaires en jeu</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Chiffre d'affaires potentiel</div>
+      <div class="v num">${eur(enCours.reduce((t,d)=>t+devMontant(d),0))}</div>
+      <div class="sub">par mois si tous signés</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Taux de transformation</div>
+      <div class="v num">${taux}<small> %</small></div>
+      <div class="sub">${gagnes.length} acceptés sur ${DEVIS.filter(d=>d.st!=="attente").length} décidés</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Panier moyen</div>
+      <div class="v num">${eur(DEVIS.reduce((t,d)=>t+devMontant(d),0) / DEVIS.length)}</div>
+      <div class="sub">par mois et par dossier</div>
+    </div>`;
+
+  const list = DEVIS.filter(d=> dvFilter === "tous" || d.st === dvFilter);
+  document.getElementById("devBody").innerHTML = list.map(d=>{
+    const m = devMontant(d);
+    const tag = d.st === "accepte" ? `<span class="tag ok">Accepté</span>`
+              : d.st === "refuse"  ? `<span class="tag danger">Refusé</span>`
+              :                      `<span class="tag warn">En attente</span>`;
+    return `
+      <tr${d.st === "refuse" ? ' class="off"' : ''}>
+        <td>
+          <div class="pname"><div class="pid">
+            <b>${d.n}</b><small>${d.a}${d.why ? " · " + d.why : ""}</small>
+          </div></div>
+        </td>
+        <td class="muted">${d.need}</td>
+        <td class="num" style="text-align:right">${d.h} h</td>
+        <td class="num" style="text-align:right; font-weight:600">${eur(m)}</td>
+        <td class="num" style="text-align:right; ${d.pec ? "" : "color:var(--ink-3)"}">${d.pec ? eur(m * (1 - d.pec)) : eur(m)}</td>
+        <td class="muted">${d.d}</td>
+        <td>${tag}</td>
+      </tr>`;
+  }).join("");
+
+  document.getElementById("devFoot").innerHTML = `
+    <tr class="paytotal">
+      <td colspan="2"><b>Total · ${list.length} devis</b></td>
+      <td class="num" style="text-align:right">${list.reduce((t,d)=>t+d.h,0)} h</td>
+      <td class="num" style="text-align:right">${eur(list.reduce((t,d)=>t+devMontant(d),0))}</td>
+      <td></td><td></td><td></td>
+    </tr>`;
+
+  if(!list.length)
+    document.getElementById("devBody").innerHTML = `<tr><td colspan="7" style="text-align:center; padding:34px; color:var(--ink-3); font-weight:600">Aucun devis sur ce filtre.</td></tr>`;
+}
+
+document.querySelectorAll("[data-dv]").forEach(b=>{
+  b.onclick = ()=>{
+    dvFilter = b.dataset.dv;
+    document.querySelectorAll("[data-dv]").forEach(x=>x.setAttribute("aria-pressed", String(x===b)));
+    renderDevis();
+  };
+});
+
+/* ============================================================
+   QUALITÉ — réclamations et événements indésirables
+   ============================================================ */
+const QUAL = [
+  {d:"24/09", t:"ei",          fam:"roussel",  o:"Chute sans gravité au lever, médecin traitant prévenu", g:"grave",  by:"sand",   st:"ouvert"},
+  {d:"23/09", t:"reclamation", fam:"lecomte",  o:"Retard répété de plus de 20 minutes le matin",          g:"moyen",  by:"fatou",  st:"ouvert"},
+  {d:"22/09", t:"reclamation", fam:"vidal",    o:"Changement d'intervenante non annoncé",                 g:"mineur", st:"ouvert", by:"celine"},
+  {d:"21/09", t:"ei",          fam:"abitbol",  o:"Erreur de pilulier détectée avant administration",      g:"grave",  by:"malika", st:"cours"},
+  {d:"19/09", t:"reclamation", fam:"gonzalez", o:"Facture jugée incompréhensible par la famille",         g:"mineur", by:"nadia",  st:"ouvert"},
+  {d:"17/09", t:"ei",          fam:"perrin",   o:"Clés non restituées en fin d'intervention",             g:"moyen",  by:"nadia",  st:"cours"},
+  {d:"14/09", t:"reclamation", fam:"kowalski", o:"Ménage non conforme aux consignes du plan d'aide",      g:"mineur", by:"fatou",  st:"clos"},
+  {d:"11/09", t:"ei",          fam:"delaunay", o:"Porte laissée ouverte au départ",                       g:"moyen",  by:"awa",    st:"clos"},
+  {d:"08/09", t:"reclamation", fam:"thibault", o:"Demande de changement d'horaire refusée",               g:"mineur", by:"awa",    st:"clos"},
+  {d:"03/09", t:"ei",          fam:"farrugia", o:"Malaise pendant la toilette, pompiers appelés",         g:"grave",  by:"rosa",   st:"clos"}
+];
+const Q_NAT = {reclamation:"Réclamation", ei:"Événement"};
+const Q_ST  = {ouvert:"À traiter", cours:"En cours", clos:"Clôturé"};
+let qFilter = "tous";
+
+function renderQualite(){
+  const ouverts = QUAL.filter(q=>q.st !== "clos");
+  const graves  = QUAL.filter(q=>q.g === "grave");
+
+  document.getElementById("qTiles").innerHTML = `
+    <div class="tile ${ouverts.length ? "alert" : ""}">
+      <div class="lb">Dossiers ouverts</div>
+      <div class="v num">${ouverts.length}</div>
+      <div class="sub">${QUAL.filter(q=>q.st==="ouvert").length} sans réponse apportée</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Événements graves</div>
+      <div class="v num">${graves.length}</div>
+      <div class="sub">déclarables à l'autorité de contrôle</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Délai moyen de traitement</div>
+      <div class="v num">6<small> j</small></div>
+      <div class="sub">objectif interne : 5 jours</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Réclamations sur l'année</div>
+      <div class="v num">23</div>
+      <div class="sub">1,5 pour 1 000 heures réalisées</div>
+    </div>`;
+
+  const list = QUAL.filter(q=>
+    qFilter === "tous"   ? true :
+    qFilter === "ouvert" ? q.st !== "clos" : q.t === qFilter);
+
+  document.getElementById("qBody").innerHTML = list.map(q=>{
+    const fam = FAM[q.fam], p = st(q.by);
+    const grav = q.g === "grave"  ? `<span class="tag danger">Grave</span>`
+               : q.g === "moyen"  ? `<span class="tag warn">Modéré</span>`
+               :                    `<span class="tag">Mineur</span>`;
+    const sta  = q.st === "ouvert" ? `<span class="tag danger">À traiter</span>`
+               : q.st === "cours"  ? `<span class="tag warn">En cours</span>`
+               :                     `<span class="tag ok">Clôturé</span>`;
+    return `
+      <tr${q.st === "clos" ? ' class="off"' : ''}>
+        <td class="num" style="color:var(--ink-3)">${q.d}</td>
+        <td class="muted">${Q_NAT[q.t]}</td>
+        <td>
+          <div class="pname"><div class="pid">
+            <b>${fam.n}</b><small>${fam.a}</small>
+          </div></div>
+        </td>
+        <td class="muted">${q.o}</td>
+        <td>${grav}</td>
+        <td class="muted">${p.nom.split(" ")[0]} ${p.nom.split(" ")[1][0]}.</td>
+        <td>${sta}</td>
+      </tr>`;
+  }).join("");
+
+  if(!list.length)
+    document.getElementById("qBody").innerHTML = `<tr><td colspan="7" style="text-align:center; padding:34px; color:var(--ink-3); font-weight:600">Aucun dossier sur ce filtre.</td></tr>`;
+}
+
+document.querySelectorAll("[data-q]").forEach(b=>{
+  b.onclick = ()=>{
+    qFilter = b.dataset.q;
+    document.querySelectorAll("[data-q]").forEach(x=>x.setAttribute("aria-pressed", String(x===b)));
+    renderQualite();
+  };
+});
+
+/* ============================================================
+   CAHIER DE LIAISON
+   ============================================================ */
+const LIAISON = [
+  {d:"Aujourd'hui", h:"10:06", by:"awa",    fam:"delaunay", k:"alerte", vu:true,
+   o:"Mme Delaunay n'a pas touché à son petit-déjeuner ce matin, deuxième fois cette semaine. Sa fille est prévenue, rendez-vous pris chez le médecin vendredi."},
+  {d:"Aujourd'hui", h:"09:41", by:"malika", fam:"aitouarab", k:"note", vu:false,
+   o:"Traitement du matin pris sans difficulté. Bonne humeur, a demandé à sortir cet après-midi."},
+  {d:"Aujourd'hui", h:"09:27", by:"fatou",  fam:"lecomte",  k:"famille", vu:true,
+   o:"Sa fille souhaite décaler le passage du mardi à 8 h 30 à partir de la semaine prochaine. À voir avec le planning."},
+  {d:"Aujourd'hui", h:"08:36", by:"nadia",  fam:"perrin",   k:"note", vu:false,
+   o:"Douche faite. Ampoule du couloir grillée, je n'avais pas d'échelle — à signaler au fils."},
+  {d:"Hier",        h:"18:12", by:"rosa",   fam:"nguyen",   k:"alerte", vu:true,
+   o:"Jambe gauche nettement plus gonflée qu'hier. J'ai laissé un mot au cabinet infirmier et prévenu l'astreinte."},
+  {d:"Hier",        h:"14:03", by:"celine", fam:"gonzalez", k:"note", vu:false,
+   o:"Courses faites, frigo réapprovisionné. A bien mangé à midi."},
+  {d:"Hier",        h:"11:20", by:"awa",    fam:"szabo",    k:"famille", vu:true,
+   o:"Mme Szabo a demandé si son mari pouvait être accompagné à son rendez-vous du 2 octobre. Devis à établir."},
+  {d:"Hier",        h:"08:14", by:"fatou",  fam:"kowalski", k:"note", vu:true,
+   o:"Nuit calme d'après elle. Tension prise : 13/8. Rien à signaler."},
+  {d:"Mercredi",    h:"17:45", by:"nadia",  fam:"thibault", k:"note", vu:true,
+   o:"Accompagnement au marché. Fatigue en fin de parcours, retour en taxi."},
+  {d:"Mercredi",    h:"09:02", by:"malika", fam:"abitbol",  k:"alerte", vu:true,
+   o:"Confusion inhabituelle au réveil, ne me reconnaissait pas au début. Revenu normal au bout de vingt minutes. À surveiller."}
+];
+const LI_K = {alerte:"Alerte", famille:"Message famille", note:"Observation"};
+let liFilter = "tous";
+
+function renderLiaison(){
+  const list = LIAISON.filter(x=>
+    liFilter === "tous" ? true :
+    liFilter === "famille" ? x.vu : x.k === liFilter);
+
+  document.getElementById("liFeed").innerHTML = list.map(x=>{
+    const p = st(x.by), fam = FAM[x.fam];
+    const tag = x.k === "alerte"  ? `<span class="tag danger">Alerte</span>`
+              : x.k === "famille" ? `<span class="tag warn">Message famille</span>`
+              :                     `<span class="tag">Observation</span>`;
+    return `
+      <div class="tr-item ${x.k === "alerte" ? "alerte" : ""}">
+        <div class="tr-when">${x.d}<br>${x.h}</div>
+        <div class="tr-body">
+          <b>${fam.n} <span>· ${p.nom}</span></b>
+          <p>${x.o}</p>
+        </div>
+        <div class="tr-meta">
+          ${tag}
+          <span class="tr-seen">${x.vu ? "Vu par la famille" : "Non lu"}</span>
+        </div>
+      </div>`;
+  }).join("");
+
+  if(!list.length)
+    document.getElementById("liFeed").innerHTML = `<div class="asgempty">Aucune transmission sur ce filtre.</div>`;
+}
+
+document.querySelectorAll("[data-li]").forEach(b=>{
+  b.onclick = ()=>{
+    liFilter = b.dataset.li;
+    document.querySelectorAll("[data-li]").forEach(x=>x.setAttribute("aria-pressed", String(x===b)));
+    renderLiaison();
+  };
+});
+
 /* ============================================================
    PROSPECTS — kanban
    ============================================================ */
@@ -3306,7 +3656,10 @@ const TITLES = {
   absences:["Ressources humaines","Demandes d'absence"],
   familles:["Bénéficiaires","Familles suivies"],
   fiscalite:["Bénéficiaires","Attestations fiscales"],
+  devis:["Bénéficiaires","Devis"],
   facturation:["Bénéficiaires","Facturation"],
+  qualite:["Qualité","Réclamations et événements"],
+  liaison:["Qualité","Cahier de liaison"],
   personnel:["Ressources humaines","Personnel"],
   contrats:["Ressources humaines","Documents du personnel"],
   paie:["Ressources humaines","Préparation de paie"],
@@ -3363,6 +3716,9 @@ renderIntegs();
 renderFacturation();
 renderFiscalite();
 renderTelegestion();
+renderDevis();
+renderQualite();
+renderLiaison();
 renderKanban();
 renderRecrut();
 renderDashboard();
