@@ -298,6 +298,9 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
 /* ---------- tableau de bord ---------- */
 .tiles{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-top:18px}
 @media(max-width:860px){.tiles{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tiles-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:1100px){.tiles-4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.note{font-size:12px; font-weight:500; color:var(--ink-3); line-height:1.4}
 .tile{
   padding:15px 18px; min-width:0; background:var(--surface);
   border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--shadow-sm);
@@ -592,6 +595,11 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
       <span class="navbadge hot" id="nb-fill">8</span>
     </button>
 
+    <button class="navitem" data-view="telegestion">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/><path d="M9.5 8.5l2 2 3.5-3.5"/></svg>
+      Télégestion
+    </button>
+
     <div class="navgroup-label">Bénéficiaires</div>
     <button class="navitem" data-view="familles">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V9.5L12 4l8 5.5V21"/><path d="M9.5 21v-6h5v6"/></svg>
@@ -743,12 +751,101 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
 
       <!-- =================== FISCALITÉ =================== -->
       <section class="view" id="view-fiscalite">
-        <div class="ghost" id="ghostFisc" aria-hidden="true" style="margin-top:22px"></div>
+        <div class="tiles tiles-4" id="fiscTiles"></div>
+        <div class="toolbar" style="margin-top:16px">
+          <span class="note" id="fiscNote"></span>
+          <button class="btn dark" style="margin-left:auto" onclick="toast('Génération des attestations — hors périmètre du POC')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/></svg>
+            Générer les attestations 2026
+          </button>
+        </div>
+        <div class="tablewrap">
+          <div class="tscroll">
+            <table class="tbl" style="min-width:920px">
+              <thead>
+                <tr>
+                  <th style="width:24%">Bénéficiaire</th>
+                  <th style="width:14%; text-align:right">Payé sur l'année</th>
+                  <th style="width:13%; text-align:right">Aides déduites</th>
+                  <th style="width:13%; text-align:right">Base éligible</th>
+                  <th style="width:15%; text-align:right">Crédit d'impôt</th>
+                  <th style="width:15%">Attestation</th>
+                  <th style="width:6%"></th>
+                </tr>
+              </thead>
+              <tbody id="fiscBody"></tbody>
+              <tfoot id="fiscFoot"></tfoot>
+            </table>
+          </div>
+        </div>
       </section>
 
       <!-- =================== FACTURATION =================== -->
       <section class="view" id="view-facturation">
-        <div class="ghost" id="ghostFact" aria-hidden="true" style="margin-top:22px"></div>
+        <div class="tiles tiles-4" id="factTiles"></div>
+        <div class="toolbar" style="margin-top:16px">
+          <button class="pill" data-fa="tous" aria-pressed="true">Toutes</button>
+          <button class="pill" data-fa="brouillon">Brouillons</button>
+          <button class="pill" data-fa="emise">Émises</button>
+          <button class="pill" data-fa="retard">En retard</button>
+          <button class="btn dark" style="margin-left:auto" onclick="toast('Préparation des factures — hors périmètre du POC')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Préparer les factures de septembre
+          </button>
+        </div>
+        <div class="tablewrap">
+          <div class="tscroll">
+            <table class="tbl" style="min-width:980px">
+              <thead>
+                <tr>
+                  <th style="width:23%">Bénéficiaire</th>
+                  <th style="width:10%; text-align:right">Heures</th>
+                  <th style="width:13%; text-align:right">Montant brut</th>
+                  <th style="width:13%; text-align:right">Pris en charge</th>
+                  <th style="width:13%; text-align:right">Reste à charge</th>
+                  <th style="width:11%">Règlement</th>
+                  <th style="width:11%">Statut</th>
+                  <th style="width:6%"></th>
+                </tr>
+              </thead>
+              <tbody id="factBody"></tbody>
+              <tfoot id="factFoot"></tfoot>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =================== TÉLÉGESTION =================== -->
+      <section class="view" id="view-telegestion">
+        <div class="tiles tiles-4" id="tgTiles"></div>
+        <div class="toolbar" style="margin-top:16px">
+          <button class="pill" data-tg="tous" aria-pressed="true">Toutes</button>
+          <button class="pill" data-tg="ecart">Écarts</button>
+          <button class="pill" data-tg="manque">Non pointées</button>
+          <button class="btn dark" style="margin-left:auto" onclick="toast('Export vers la facturation — hors périmètre du POC')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5"/><path d="M4 20h16"/></svg>
+            Valider les heures du jour
+          </button>
+        </div>
+        <div class="tablewrap">
+          <div class="tscroll">
+            <table class="tbl" style="min-width:900px">
+              <thead>
+                <tr>
+                  <th style="width:12%">Prévu</th>
+                  <th style="width:21%">Intervenante</th>
+                  <th style="width:21%">Bénéficiaire</th>
+                  <th style="width:10%; text-align:right">Arrivée</th>
+                  <th style="width:10%; text-align:right">Départ</th>
+                  <th style="width:10%; text-align:right">Écart</th>
+                  <th style="width:16%">Pointage</th>
+                </tr>
+              </thead>
+              <tbody id="tgBody"></tbody>
+              <tfoot id="tgFoot"></tfoot>
+            </table>
+          </div>
+        </div>
       </section>
 
       <!-- =================== ABSENCES =================== -->
@@ -1746,8 +1843,6 @@ function renderGhost(id, cols, rows = 9){
     ).join("");
 }
 
-renderGhost("ghostFisc", [30, 16, 14, 16, 14, 10]);
-renderGhost("ghostFact", [28, 18, 16, 14, 14, 10]);
 
 /* ============================================================
    ABSENCES
@@ -2721,6 +2816,310 @@ function renderIntegs(){
 
 }
 
+
+/* ============================================================
+   TÉLÉGESTION, FACTURATION, FISCALITÉ
+   Une seule source : les heures du planning.
+   ============================================================ */
+
+/* tarifs horaires appliqués aux familles, par prestation */
+const TARIF = {toilette:29.5, menage:27, courses:28.5, accomp:26.5, nuit:24};
+
+/* part financée par un tiers (APA, mutuelle, caisse de retraite) */
+const PEC = {
+  delaunay:.62, behar:0, nguyen:.55, lecomte:.40, farrugia:.72,
+  szabo:0, abitbol:.48, roussel:.35, kowalski:.58, dasilva:0,
+  perrin:.50, aitouarab:.66, vidal:0, gonzalez:.44, thibault:.30
+};
+
+/* plafond annuel de dépenses ouvrant droit au crédit d'impôt */
+const PLAFOND = {szabo:15000, roussel:20000, delaunay:15000};
+const plafondDe = id => PLAFOND[id] || 13500;
+
+/* mode de règlement et état de la facture du mois */
+const REGL = {
+  delaunay:"Prélèvement", behar:"Prélèvement", nguyen:"CESU", lecomte:"Virement",
+  farrugia:"Prélèvement", szabo:"CESU", abitbol:"Prélèvement", roussel:"Virement",
+  kowalski:"Prélèvement", dasilva:"Virement", perrin:"Prélèvement",
+  aitouarab:"Prélèvement", vidal:"CESU", gonzalez:"Prélèvement", thibault:"Virement"
+};
+const FACT_ST = {
+  lecomte:"retard", vidal:"retard", dasilva:"brouillon", gonzalez:"brouillon",
+  behar:"emise", perrin:"emise", thibault:"emise"
+};
+const statutDe = id => FACT_ST[id] || "payee";
+const ST_LABEL = {payee:"Payée", emise:"Émise", retard:"En retard", brouillon:"Brouillon"};
+
+const eur = n => Math.round(n).toLocaleString("fr-FR").replace(/ | /g, " ") + " €";
+
+/* ventilation des heures hebdomadaires d'une famille par prestation */
+function famParPresta(id){
+  const out = {};
+  VACS.filter(v=>v.fam===id).forEach(v=>{ out[v.pr] = (out[v.pr]||0) + (v.e-v.s)/60; });
+  return out;
+}
+
+/* facture du mois pour une famille */
+function factureDe(id){
+  const parPr = famParPresta(id);
+  const heures = Object.values(parPr).reduce((t,h)=>t+h, 0) * WEEKS_PER_MONTH;
+  let brut = 0;
+  Object.entries(parPr).forEach(([pr,h])=> brut += h * WEEKS_PER_MONTH * TARIF[pr]);
+  /* majoration du dimanche : 25 % sur les heures concernées */
+  const hDim = VACS.filter(v=>v.fam===id && v.day===6).reduce((t,v)=>t+(v.e-v.s)/60, 0) * WEEKS_PER_MONTH;
+  const maj  = hDim * 27 * .25;
+  brut += maj;
+  const pec  = brut * (PEC[id] || 0);
+  return {id, heures, brut, maj, hDim, pec, reste: brut - pec, st: statutDe(id)};
+}
+
+const FACTURES = () => Object.keys(FAM).map(factureDe).sort((a,b)=> b.brut - a.brut);
+
+let faFilter = "tous";
+
+function renderFacturation(){
+  const all = FACTURES();
+  const facture = all.reduce((t,f)=>t+f.brut, 0);
+  const encaisse = all.filter(f=>f.st==="payee").reduce((t,f)=>t+f.reste, 0);
+  const impaye  = all.filter(f=>f.st==="retard").reduce((t,f)=>t+f.reste, 0);
+
+  document.getElementById("factTiles").innerHTML = `
+    <div class="tile">
+      <div class="lb">Facturé en septembre</div>
+      <div class="v num">${eur(facture)}</div>
+      <div class="sub">${all.length} factures · ${Math.round(all.reduce((t,f)=>t+f.heures,0))} h</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Encaissé</div>
+      <div class="v num">${eur(encaisse)}</div>
+      <div class="sub">${all.filter(f=>f.st==="payee").length} règlements reçus</div>
+    </div>
+    <div class="tile ${impaye ? "alert" : ""}">
+      <div class="lb">Impayé</div>
+      <div class="v num">${eur(impaye)}</div>
+      <div class="sub">${all.filter(f=>f.st==="retard").length} factures en retard</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Délai moyen de paiement</div>
+      <div class="v num">34<small> j</small></div>
+      <div class="sub">21 j en direct, 67 j sur financement</div>
+    </div>`;
+
+  const list = all.filter(f=> faFilter === "tous" || f.st === faFilter);
+  const body = document.getElementById("factBody");
+  body.innerHTML = list.map(f=>{
+    const fam = FAM[f.id];
+    const tag = f.st === "retard"    ? `<span class="tag danger">En retard</span>`
+              : f.st === "brouillon" ? `<span class="tag">Brouillon</span>`
+              : f.st === "emise"     ? `<span class="tag warn">Émise</span>`
+              :                        `<span class="tag ok">Payée</span>`;
+    return `
+      <tr>
+        <td>
+          <div class="pname"><div class="pid">
+            <b>${fam.n}</b><small>${fam.a} · ${famPresta(f.id).map(x=>PRESTA[x].short).join(", ")}</small>
+          </div></div>
+        </td>
+        <td class="num" style="text-align:right">${Math.round(f.heures)} h</td>
+        <td class="num" style="text-align:right; font-weight:600">${eur(f.brut)}</td>
+        <td class="num" style="text-align:right; ${f.pec ? "" : "color:var(--ink-3)"}">${f.pec ? "− " + eur(f.pec) : "—"}</td>
+        <td class="num" style="text-align:right; font-weight:600">${eur(f.reste)}</td>
+        <td class="muted">${REGL[f.id]}</td>
+        <td>${tag}</td>
+        ${EDIT_CELL}
+      </tr>`;
+  }).join("");
+
+  document.getElementById("factFoot").innerHTML = `
+    <tr class="paytotal">
+      <td><b>Total · ${list.length} factures</b></td>
+      <td class="num" style="text-align:right">${Math.round(list.reduce((t,f)=>t+f.heures,0))} h</td>
+      <td class="num" style="text-align:right">${eur(list.reduce((t,f)=>t+f.brut,0))}</td>
+      <td class="num" style="text-align:right">− ${eur(list.reduce((t,f)=>t+f.pec,0))}</td>
+      <td class="num" style="text-align:right">${eur(list.reduce((t,f)=>t+f.reste,0))}</td>
+      <td></td><td></td><td></td>
+    </tr>`;
+
+  if(!list.length)
+    body.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:34px; color:var(--ink-3); font-weight:600">Aucune facture sur ce filtre.</td></tr>`;
+}
+
+document.querySelectorAll("[data-fa]").forEach(b=>{
+  b.onclick = ()=>{
+    faFilter = b.dataset.fa;
+    document.querySelectorAll("[data-fa]").forEach(x=>x.setAttribute("aria-pressed", String(x===b)));
+    renderFacturation();
+  };
+});
+
+/* ---------- attestations fiscales ---------- */
+function fiscalDe(id){
+  const f = factureDe(id);
+  const paye = f.reste * 12;                  /* sommes réellement payées par la famille */
+  const aides = f.pec * 12;
+  const plaf = plafondDe(id);
+  const base = Math.min(paye, plaf);
+  return {id, paye, aides, base, plaf, atteint: paye > plaf, credit: base * .5};
+}
+
+function renderFiscalite(){
+  const all = Object.keys(FAM).map(fiscalDe).sort((a,b)=> b.paye - a.paye);
+  const credit = all.reduce((t,x)=>t+x.credit, 0);
+  const aProduire = all.length - 4;
+
+  document.getElementById("fiscTiles").innerHTML = `
+    <div class="tile">
+      <div class="lb">Attestations à produire</div>
+      <div class="v num">${aProduire}<small> / ${all.length}</small></div>
+      <div class="sub">échéance au 31 janvier 2027</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Sommes ouvrant droit</div>
+      <div class="v num">${eur(all.reduce((t,x)=>t+x.base,0))}</div>
+      <div class="sub">après déduction des aides</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Crédit d'impôt estimé</div>
+      <div class="v num">${eur(credit)}</div>
+      <div class="sub">50 % des dépenses, case 7DB</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Avance immédiate</div>
+      <div class="v num">9<small> / ${all.length}</small></div>
+      <div class="sub">crédit versé au fil de l'eau</div>
+    </div>`;
+
+  document.getElementById("fiscNote").textContent =
+    "Année 2026 · seules les sommes effectivement payées par la famille ouvrent droit au crédit d'impôt.";
+
+  const envoyees = ["delaunay","behar","lecomte","szabo"];
+  document.getElementById("fiscBody").innerHTML = all.map(x=>{
+    const fam = FAM[x.id];
+    const envoyee = envoyees.includes(x.id);
+    return `
+      <tr>
+        <td>
+          <div class="pname"><div class="pid">
+            <b>${fam.n}</b><small>${fam.a}${x.atteint ? " · plafond atteint" : ""}</small>
+          </div></div>
+        </td>
+        <td class="num" style="text-align:right; font-weight:600">${eur(x.paye)}</td>
+        <td class="num" style="text-align:right; ${x.aides ? "" : "color:var(--ink-3)"}">${x.aides ? "− " + eur(x.aides) : "—"}</td>
+        <td class="num" style="text-align:right; ${x.atteint ? "color:var(--warn); font-weight:600" : ""}">${eur(x.base)}</td>
+        <td class="num" style="text-align:right; font-weight:600">${eur(x.credit)}</td>
+        <td>${envoyee ? `<span class="tag ok">Envoyée</span>` : `<span class="tag warn">À produire</span>`}</td>
+        <td class="editcell">${envoyee
+          ? `<button class="dl" title="Télécharger l'attestation" aria-label="Télécharger l'attestation" onclick="toast('Téléchargement — hors périmètre du POC')">${ICO_DL}</button>`
+          : `<span class="dlnone">—</span>`}</td>
+      </tr>`;
+  }).join("");
+
+  document.getElementById("fiscFoot").innerHTML = `
+    <tr class="paytotal">
+      <td><b>Total · ${all.length} familles</b></td>
+      <td class="num" style="text-align:right">${eur(all.reduce((t,x)=>t+x.paye,0))}</td>
+      <td class="num" style="text-align:right">− ${eur(all.reduce((t,x)=>t+x.aides,0))}</td>
+      <td class="num" style="text-align:right">${eur(all.reduce((t,x)=>t+x.base,0))}</td>
+      <td class="num" style="text-align:right">${eur(credit)}</td>
+      <td></td><td></td>
+    </tr>`;
+}
+
+/* ---------- télégestion ---------- */
+const TG_JOUR = 4;                                     /* vendredi 25 septembre */
+const hashOf = str => { let h = 0; for(const c of str) h = (h*31 + c.charCodeAt(0)) % 1000; return h; };
+
+function pointageDe(v){
+  const h = hashOf(v.id);
+  const arr = v.s + (h % 13) - 5;                      /* de 5 min d'avance à 7 de retard */
+  const dep = v.e + ((h >> 2) % 15) - 6;
+  const ecart = (dep - arr) - (v.e - v.s);
+  const moyen = h % 3 === 0 ? "QR au domicile" : h % 3 === 1 ? "Badge NFC" : "Application mobile";
+  let etat = "ok";
+  if(h % 17 === 0) etat = "manque";                    /* pointage oublié */
+  else if(Math.abs(ecart) >= 10) etat = "ecart";
+  return {v, arr, dep, ecart, moyen, etat};
+}
+
+let tgFilter = "tous";
+
+function renderTelegestion(){
+  const jour = VACS.filter(v=>v.day === TG_JOUR && v.staff).sort((a,b)=> a.s - b.s);
+  const all  = jour.map(pointageDe);
+  const ecarts = all.filter(x=>x.etat === "ecart");
+  const manques = all.filter(x=>x.etat === "manque");
+  const cumul = all.filter(x=>x.etat !== "manque").reduce((t,x)=>t+x.ecart, 0);
+
+  document.getElementById("tgTiles").innerHTML = `
+    <div class="tile">
+      <div class="lb">Interventions du jour</div>
+      <div class="v num">${all.length}</div>
+      <div class="sub">vendredi 25 septembre</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Pointées</div>
+      <div class="v num">${all.length - manques.length}<small> / ${all.length}</small></div>
+      <div class="sub">${Math.round((all.length - manques.length) / all.length * 100)} % de couverture</div>
+    </div>
+    <div class="tile ${ecarts.length ? "alert" : ""}">
+      <div class="lb">Écarts à contrôler</div>
+      <div class="v num">${ecarts.length}</div>
+      <div class="sub">plus de 10 minutes d'écart</div>
+    </div>
+    <div class="tile">
+      <div class="lb">Écart cumulé</div>
+      <div class="v num">${cumul >= 0 ? "+" : "−"}${Math.abs(cumul)}<small> min</small></div>
+      <div class="sub">reporté sur les heures facturées</div>
+    </div>`;
+
+  const list = all.filter(x=> tgFilter === "tous" || x.etat === tgFilter);
+  const body = document.getElementById("tgBody");
+
+  body.innerHTML = list.map(({v, arr, dep, ecart, moyen, etat})=>{
+    const p = st(v.staff), fam = FAM[v.fam];
+    const tag = etat === "manque"
+              ? `<span class="tag danger">Non pointée</span>`
+              : `<span class="tag">${moyen}</span>`;
+    const ec = etat === "manque" ? `<span style="color:var(--ink-3)">—</span>`
+             : ecart === 0 ? `<span style="color:var(--ink-3)">0 min</span>`
+             : `<span style="${Math.abs(ecart) >= 10 ? "color:var(--warn); font-weight:600" : ""}">${ecart > 0 ? "+" : "−"}${Math.abs(ecart)} min</span>`;
+    return `
+      <tr${etat === "manque" ? ' class="off"' : ''}>
+        <td class="num" style="color:var(--ink-3)">${fmt(v.s)} – ${fmt(v.e)}</td>
+        <td>
+          <div class="pname"><div class="pid">
+            <b>${p.nom}</b><small>${PRESTA[v.pr].short}</small>
+          </div></div>
+        </td>
+        <td class="muted">${fam.n}<small class="sub">${fam.adr}</small></td>
+        <td class="num" style="text-align:right">${etat === "manque" ? "—" : fmt(arr)}</td>
+        <td class="num" style="text-align:right">${etat === "manque" ? "—" : fmt(dep)}</td>
+        <td class="num" style="text-align:right">${ec}</td>
+        <td>${tag}</td>
+      </tr>`;
+  }).join("");
+
+  const heures = list.filter(x=>x.etat !== "manque").reduce((t,x)=>t+(x.dep-x.arr)/60, 0);
+  document.getElementById("tgFoot").innerHTML = `
+    <tr class="paytotal">
+      <td colspan="3"><b>Total · ${list.length} interventions</b></td>
+      <td colspan="2" class="num" style="text-align:right">${r1(heures)} h pointées</td>
+      <td class="num" style="text-align:right">${cumul >= 0 ? "+" : "−"}${Math.abs(cumul)} min</td>
+      <td></td>
+    </tr>`;
+
+  if(!list.length)
+    body.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:34px; color:var(--ink-3); font-weight:600">Aucune intervention sur ce filtre.</td></tr>`;
+}
+
+document.querySelectorAll("[data-tg]").forEach(b=>{
+  b.onclick = ()=>{
+    tgFilter = b.dataset.tg;
+    document.querySelectorAll("[data-tg]").forEach(x=>x.setAttribute("aria-pressed", String(x===b)));
+    renderTelegestion();
+  };
+});
+
 /* ============================================================
    PROSPECTS — kanban
    ============================================================ */
@@ -2909,6 +3308,7 @@ const TITLES = {
   dashboard:["Exploitation","Tableau de bord"],
   planning:["Exploitation","Planning de la semaine"],
   affectation:["Exploitation","Affectation des interventions"],
+  telegestion:["Exploitation","Télégestion"],
   absences:["Ressources humaines","Demandes d'absence"],
   familles:["Bénéficiaires","Familles suivies"],
   fiscalite:["Bénéficiaires","Attestations fiscales"],
@@ -2966,6 +3366,9 @@ renderPaie();
 renderCapacite();
 renderPartenaires();
 renderIntegs();
+renderFacturation();
+renderFiscalite();
+renderTelegestion();
 renderKanban();
 renderRecrut();
 renderDashboard();
