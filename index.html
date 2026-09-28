@@ -342,6 +342,42 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
 .todo small{font-size:11.5px; color:var(--ink-3); font-weight:500}
 .todo .go{margin-left:auto; color:var(--ink-3); flex:none}
 
+/* ---------- dossier bénéficiaire ---------- */
+.dhead{display:flex; align-items:center; gap:16px; margin-top:20px; flex-wrap:wrap}
+.dident{display:flex; align-items:center; gap:10px; flex-wrap:wrap; min-width:0}
+.dident h2{font-family:var(--display); font-size:22px; font-weight:500; letter-spacing:-.03em; line-height:1.2}
+.dident #dosBadges{display:flex; gap:6px; flex-wrap:wrap}
+.dhead .note{margin-left:auto; text-align:right}
+.tabs{display:flex; gap:2px; border-bottom:1px solid var(--line); margin-top:16px; overflow-x:auto}
+.tabs button{
+  padding:10px 14px 11px; font-size:12.5px; font-weight:600; color:var(--ink-3);
+  border-bottom:2px solid transparent; white-space:nowrap; background:transparent; transition:color .14s;
+}
+.tabs button:hover{color:var(--ink)}
+.tabs button[aria-selected="true"]{color:var(--accent-deep); border-bottom-color:var(--accent)}
+.panel{margin-top:16px; padding-bottom:10px}
+.dcard{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); box-shadow:var(--shadow-sm); padding:19px 22px 21px}
+.dcard + .dcard{margin-top:14px}
+.dcard h3{font-size:14px; font-weight:600; margin-bottom:14px}
+.dgrid{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:17px 26px}
+@media(max-width:900px){.dgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.dgrid span{display:block; font-size:10px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3)}
+.dgrid b{display:block; font-size:13.5px; font-weight:600; margin-top:4px; line-height:1.35}
+.dgrid b small{display:block; font-size:11.5px; font-weight:500; color:var(--ink-3); margin-top:2px}
+.dalert{
+  display:flex; gap:12px; align-items:flex-start; padding:14px 16px; border-radius:var(--r-md); margin-bottom:14px;
+  background:linear-gradient(150deg,#FEF7EC 0%,#FBEDD5 100%); border:1px solid #EEDCBA; color:var(--warn);
+  font-size:12.5px; font-weight:600; line-height:1.5;
+}
+.dalert svg{flex:none; margin-top:1px}
+.dlist{display:flex; flex-direction:column}
+.dlist .row{display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid var(--line-soft)}
+.dlist .row:last-child{border-bottom:0}
+.dlist .row .k{width:118px; flex:none; font-size:11.5px; font-weight:700; color:var(--ink-3); font-variant-numeric:tabular-nums}
+.dlist .row .v{flex:1; min-width:0; font-size:13px; font-weight:600}
+.dlist .row .v small{display:block; font-size:11.5px; font-weight:500; color:var(--ink-3); margin-top:1px}
+.dlist .row .r{margin-left:auto; flex:none; display:flex; align-items:center; gap:10px}
+
 /* ---------- cahier de liaison ---------- */
 .feed{
   margin-top:16px; background:var(--surface); border:1px solid var(--line);
@@ -844,6 +880,32 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
             </table>
           </div>
         </div>
+      </section>
+
+      <!-- =================== DOSSIER BÉNÉFICIAIRE =================== -->
+      <section class="view" id="view-dossier">
+        <div class="dhead">
+          <button class="btn" onclick="go('familles')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+            Familles
+          </button>
+          <div class="dident">
+            <h2 id="dosName"></h2>
+            <div id="dosBadges"></div>
+          </div>
+          <span class="note" id="dosRef"></span>
+        </div>
+        <div class="tabs" id="dosTabs">
+          <button data-tab="identite" aria-selected="true">Informations</button>
+          <button data-tab="prestations" aria-selected="false">Prestations</button>
+          <button data-tab="aide" aria-selected="false">Plan d'aide et financement</button>
+          <button data-tab="dipc" aria-selected="false">DIPC</button>
+          <button data-tab="planning" aria-selected="false">Planning</button>
+          <button data-tab="liaison" aria-selected="false">Transmissions</button>
+          <button data-tab="factu" aria-selected="false">Facturation</button>
+          <button data-tab="docs" aria-selected="false">Documents</button>
+        </div>
+        <div class="panel" id="dosPanel"></div>
       </section>
 
       <!-- =================== DEVIS =================== -->
@@ -2039,43 +2101,272 @@ function renderFamilles(){
 
 }
 
+/* ---------- dossier bénéficiaire : page à onglets ---------- */
+const FICHE = {
+  delaunay: {age:84, gir:"GIR 4", med:"Dr Lemoine", tel:"01 43 55 12 08", urg:"Claire Delaunay · 06 12 44 87 21"},
+  behar:    {age:79, gir:"GIR 5", med:"Dr Attali",  tel:"01 42 71 09 33", urg:"Simon Behar · 06 88 12 04 55"},
+  nguyen:   {age:88, gir:"GIR 3", med:"Dr Tran",    tel:"01 45 83 62 17", urg:"Mme Nguyen · 06 51 77 20 43"},
+  lecomte:  {age:91, gir:"GIR 2", med:"Dr Haddad",  tel:"01 46 22 41 90", urg:"Hélène Lecomte · 06 07 33 18 62"},
+  farrugia: {age:86, gir:"GIR 3", med:"Dr Ropers",  tel:"01 47 34 55 21", urg:"Jean Farrugia · 06 24 91 77 05"},
+  szabo:    {age:77, gir:"GIR 5", med:"Dr Bellanger",tel:"01 48 02 19 74", urg:"Mme Szabo · 06 63 40 12 88"},
+  abitbol:  {age:83, gir:"GIR 4", med:"Dr Sitbon",  tel:"01 43 09 66 12", urg:"David Abitbol · 06 15 82 37 40"},
+  roussel:  {age:90, gir:"GIR 2", med:"Dr Vallet",  tel:"01 45 27 84 63", urg:"Marie Roussel · 06 72 55 09 31"},
+  kowalski: {age:81, gir:"GIR 4", med:"Dr Nowak",   tel:"01 42 58 30 77", urg:"Anna Kowalski · 06 44 18 62 09"},
+  dasilva:  {age:74, gir:"GIR 5", med:"Dr Ferreira",tel:"01 40 19 25 88", urg:"M. Da Silva · 06 31 70 44 16"},
+  perrin:   {age:87, gir:"GIR 3", med:"Dr Moreau",  tel:"01 43 62 11 05", urg:"Luc Perrin · 06 98 26 53 71"},
+  aitouarab:{age:85, gir:"GIR 3", med:"Dr Chami",   tel:"01 42 06 47 39", urg:"Nadia Aït-Ouarab · 06 20 84 66 12"},
+  vidal:    {age:80, gir:"GIR 5", med:"Dr Serrano", tel:"01 47 51 93 24", urg:"Mme Vidal · 06 59 03 27 84"},
+  gonzalez: {age:82, gir:"GIR 4", med:"Dr Pastor",  tel:"01 44 38 70 61", urg:"Pilar Gonzalez · 06 11 49 35 07"},
+  thibault: {age:89, gir:"GIR 3", med:"Dr Guéret",  tel:"01 46 75 28 40", urg:"Mme Thibault · 06 86 61 14 92"}
+};
+
+/* document individuel de prise en charge */
+const DIPC = {};
+Object.keys(FAM).forEach((id,k)=>{
+  const an = 2026;
+  const mois = String((k % 12) + 1).padStart(2,"0");
+  DIPC[id] = {
+    ref:`DIPC-${an}-${String(k+1).padStart(4,"0")}`,
+    effet:`15/${mois}/${an}`,
+    fin:`14/${mois}/${an+1}`,
+    version: k % 4 === 0 ? "v2" : "v1",
+    avenants: k % 4 === 0 ? 1 : 0,
+    revision:`15/${mois}/${an+1}`,
+    aRegulariser: k % 5 === 2
+  };
+});
+
+const MOIS_NOM = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+let dosId = null, dosTab = "identite";
+
 function openDossier(id){
-  const f = FAM[id], i = FAMINFO[id];
-  const h = famHours(id);
-  const team = famStaff(id).map(s=>st(s).nom);
-  const pr = famPresta(id).map(p=>PRESTA[p].n);
-  const week = VACS.filter(v=>v.fam===id).sort((a,b)=>a.day-b.day||a.s-b.s);
-
-  document.getElementById("mverdict").textContent = "Dossier bénéficiaire";
-  document.getElementById("mverdict").style.color = "var(--ink-3)";
-  document.getElementById("mtitle").textContent = f.n;
-  document.getElementById("msub").textContent = `${f.a} · secteur ${f.s} · client depuis ${i.depuis}`;
-
-  const rows = [
-    ["Plan d'aide", `${Math.round(h)} h par semaine, réparties sur ${new Set(week.map(v=>v.day)).size} jours`, "green"],
-    ["Contact référent", i.ref, "blue"],
-    ["Prestations", pr.join(", "), "blue"],
-    ["Intervenantes attitrées", team.length ? team.join(", ") : "Aucune intervenante attitrée", team.length>1 ? "green" : "orange"],
-    ["Adresse", `${f.adr}, ${f.a} — ${i.acces}`, "blue"]
-  ];
-  if(i.statut === "temporaire")
-    rows.unshift(["Prise en charge temporaire", "Sortie d'hospitalisation — fin de prise en charge à confirmer avec la CPAM", "orange"]);
-
-  const body = document.getElementById("mbody");
-  body.innerHTML = "";
-  rows.forEach(([t,d,lv])=>{
-    const el = document.createElement("div");
-    el.className = "check " + lv;
-    el.innerHTML = `<div><b>${t}</b><p>${d}</p></div>`;
-    body.appendChild(el);
-  });
-
-  const foot = document.getElementById("mfoot");
-  foot.innerHTML = "";
-  const spacer = document.createElement("div"); spacer.style.flex = "1";
-  foot.append(spacer, mkBtn("Voir le planning","",()=>{ planFilter = {kind:"fam", id}; syncPlanControls(); renderGrid(); close(); go("planning"); }), mkBtn("Fermer","dark",close));
-  scrim.classList.add("on");
+  dosId = id; dosTab = "identite";
+  document.querySelectorAll("#dosTabs button").forEach(b=>b.setAttribute("aria-selected", String(b.dataset.tab === "identite")));
+  go("dossier");
+  document.getElementById("vtitle").textContent = FAM[id].n;
+  document.querySelectorAll(".navitem").forEach(b=>b.setAttribute("aria-current", String(b.dataset.view === "familles")));
+  renderDossier();
 }
+
+function renderDossier(){
+  const id = dosId;
+  if(!id) return;
+  const f = FAM[id], i = FAMINFO[id], fi = FICHE[id], d = DIPC[id];
+
+  document.getElementById("dosName").textContent = f.n;
+  document.getElementById("dosBadges").innerHTML =
+    `<span class="tag">${fi.age} ans</span><span class="tag">${fi.gir}</span>` +
+    (i.statut === "temporaire"
+      ? `<span class="tag warn">Prise en charge temporaire</span>`
+      : `<span class="tag ok">Actif</span>`);
+  document.getElementById("dosRef").innerHTML =
+    `Réf. CL-${d.ref.slice(5)}<br>client depuis le ${i.depuis}`;
+
+  document.getElementById("dosPanel").innerHTML = PANEL[dosTab](id, f, i, fi, d);
+}
+
+const dl = (label) => `<button class="dl" title="Télécharger ${label}" aria-label="Télécharger ${label}" onclick="toast('Téléchargement — hors périmètre du POC')">${ICO_DL}</button>`;
+
+const PANEL = {
+  identite: (id, f, i, fi) => `
+    <div class="dcard">
+      <h3>Identité et contacts</h3>
+      <div class="dgrid">
+        <div><span>Âge</span><b>${fi.age} ans</b></div>
+        <div><span>Degré de dépendance</span><b>${fi.gir}<small>grille AGGIR</small></b></div>
+        <div><span>Secteur</span><b>${cap(f.s)}<small>${f.a} arrondissement</small></b></div>
+        <div><span>Adresse</span><b>${f.adr}<small>${f.a}</small></b></div>
+        <div><span>Accès au domicile</span><b>${i.acces}</b></div>
+        <div><span>Téléphone</span><b>${fi.tel}</b></div>
+        <div><span>Contact référent</span><b>${i.ref}</b></div>
+        <div><span>À prévenir en cas d'urgence</span><b>${fi.urg}</b></div>
+        <div><span>Médecin traitant</span><b>${fi.med}</b></div>
+      </div>
+    </div>`,
+
+  prestations: (id) => {
+    const parPr = famParPresta(id);
+    const team = famStaff(id);
+    return `
+    <div class="dcard">
+      <h3>Prestations au plan d'aide</h3>
+      <div class="dlist">
+        ${Object.entries(parPr).sort((a,b)=>b[1]-a[1]).map(([pr,h])=>`
+          <div class="row">
+            <div class="v">${PRESTA[pr].n}<small>${PRESTA[pr].hab ? "habilitation « " + PRESTA[pr].hab + " » requise" : "aucune habilitation particulière"}</small></div>
+            <div class="r"><b style="font-size:13px">${Math.round(h)} h</b><span style="color:var(--ink-3); font-size:12px">/ sem</span></div>
+          </div>`).join("")}
+      </div>
+    </div>
+    <div class="dcard">
+      <h3>Intervenantes attitrées</h3>
+      <div class="dlist">
+        ${team.length ? team.map(sid=>{
+          const p = st(sid);
+          return `<div class="row">
+            <div class="v">${p.nom}<small>${p.c} · ${cap(p.sect)} · ${p.dip}</small></div>
+            <div class="r"><span class="tag">${Math.round(VACS.filter(v=>v.fam===id && v.staff===sid).reduce((t,v)=>t+(v.e-v.s)/60,0))} h / sem</span></div>
+          </div>`;
+        }).join("") : `<div class="row"><div class="v" style="color:var(--ink-3)">Aucune intervenante attitrée</div></div>`}
+      </div>
+    </div>`;
+  },
+
+  aide: (id) => {
+    const fa = factureDe(id);
+    const jours = new Set(VACS.filter(v=>v.fam===id).map(v=>v.day)).size;
+    const pct = Math.round((PEC[id] || 0) * 100);
+    return `
+    <div class="dcard">
+      <h3>Volume et répartition</h3>
+      <div class="dgrid">
+        <div><span>Heures hebdomadaires</span><b>${Math.round(famHours(id))} h<small>réparties sur ${jours} jours</small></b></div>
+        <div><span>Heures mensuelles</span><b>${Math.round(fa.heures)} h<small>sur ${r1(WEEKS_PER_MONTH)} semaines en moyenne</small></b></div>
+        <div><span>Dont dimanche</span><b>${fa.hDim ? r1(fa.hDim) + " h" : "—"}<small>${fa.hDim ? "majorées de 25 %" : "aucune intervention le dimanche"}</small></b></div>
+      </div>
+    </div>
+    <div class="dcard">
+      <h3>Financement</h3>
+      <div class="dgrid">
+        <div><span>Montant mensuel</span><b>${eur(fa.brut)}<small>tarifs par prestation, majorations incluses</small></b></div>
+        <div><span>Pris en charge</span><b>${pct ? pct + " %" : "aucune prise en charge"}<small>${pct ? "soit " + eur(fa.pec) + " par mois" : "financement intégralement privé"}</small></b></div>
+        <div><span>Reste à charge</span><b>${eur(fa.reste)}<small>avant crédit d'impôt</small></b></div>
+        <div><span>Après crédit d'impôt</span><b>${eur(fa.reste / 2)}<small>50 % dans la limite du plafond annuel</small></b></div>
+        <div><span>Plafond annuel</span><b>${eur(plafondDe(id))}<small>de dépenses ouvrant droit</small></b></div>
+        <div><span>Mode de règlement</span><b>${REGL[id]}</b></div>
+      </div>
+    </div>`;
+  },
+
+  dipc: (id, f, i, fi, d) => `
+    ${d.aRegulariser ? `<div class="dalert">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 8v5M12 16.5v.5"/><circle cx="12" cy="12" r="9"/></svg>
+      <span>Les prestations ont été modifiées depuis la signature. Le document ne correspond plus aux interventions en cours : un avenant est nécessaire pour régulariser la situation.</span>
+    </div>` : ""}
+    <div class="dcard">
+      <h3>Document individuel de prise en charge</h3>
+      <div class="dgrid">
+        <div><span>Référence</span><b>${d.ref}</b></div>
+        <div><span>Date d'effet</span><b>${d.effet}</b></div>
+        <div><span>Échéance</span><b>${d.fin}</b></div>
+        <div><span>Version</span><b>${d.version}<small>${d.avenants ? d.avenants + " avenant" : "aucun avenant"}</small></b></div>
+        <div><span>Prochaine révision</span><b>${d.revision}<small>révision annuelle obligatoire</small></b></div>
+        <div><span>Délai de rétractation</span><b>Expiré<small>15 jours après la signature</small></b></div>
+      </div>
+    </div>
+    <div class="dcard">
+      <h3>Parties au contrat</h3>
+      <div class="dgrid">
+        <div><span>Le service prestataire</span><b>Nena Adom<small>SIRET 951 028 034 00019</small></b></div>
+        <div><span>Numéro de déclaration</span><b>SAP 951028034<small>services à la personne</small></b></div>
+        <div><span>Le bénéficiaire</span><b>${f.n}<small>${f.adr}, ${f.a}</small></b></div>
+        <div><span>Représenté par</span><b>${i.ref}</b></div>
+        <div><span>Responsable de secteur</span><b>Awa Traoré</b></div>
+        <div><span>TVA</span><b>Exonérée<small>article 261-7 du CGI</small></b></div>
+      </div>
+    </div>`,
+
+  planning: (id) => {
+    const week = VACS.filter(v=>v.fam===id).sort((a,b)=>a.day-b.day||a.s-b.s);
+    return `
+    <div class="dcard">
+      <h3>Interventions de la semaine</h3>
+      <div class="dlist">
+        ${week.map(v=>`
+          <div class="row">
+            <div class="k">${DAYS[v.day].slice(0,3)}. ${DATES[v.day]}<br>${fmt(v.s)} – ${fmt(v.e)}</div>
+            <div class="v">${PRESTA[v.pr].n}<small>${v.staff ? st(v.staff).nom : "à pourvoir"}</small></div>
+            <div class="r">${v.staff
+              ? `<span class="tag">${r1((v.e-v.s)/60)} h</span>`
+              : `<span class="tag danger">À pourvoir</span>`}</div>
+          </div>`).join("")}
+      </div>
+    </div>`;
+  },
+
+  liaison: (id) => {
+    const mine = LIAISON.filter(x=>x.fam === id);
+    return `
+    <div class="dcard">
+      <h3>Transmissions du domicile</h3>
+      ${mine.length ? `<div class="dlist">
+        ${mine.map(x=>`
+          <div class="row">
+            <div class="k">${x.d}<br>${x.h}</div>
+            <div class="v" style="font-weight:500">${x.o}<small>${st(x.by).nom}</small></div>
+            <div class="r">${x.k === "alerte" ? `<span class="tag danger">Alerte</span>`
+              : x.k === "famille" ? `<span class="tag warn">Message famille</span>`
+              : `<span class="tag">Observation</span>`}</div>
+          </div>`).join("")}
+      </div>` : `<p class="note">Aucune transmission sur les sept derniers jours.</p>`}
+    </div>`;
+  },
+
+  factu: (id) => {
+    const fa = factureDe(id);
+    const fisc = fiscalDe(id);
+    const mois = [8,7,6,5];
+    return `
+    <div class="dcard">
+      <h3>Dernières factures</h3>
+      <div class="dlist">
+        ${mois.map((m,k)=>`
+          <div class="row">
+            <div class="k">${cap(MOIS_NOM[m])} 2026</div>
+            <div class="v">${eur(fa.brut)}<small>${Math.round(fa.heures)} h · reste à charge ${eur(fa.reste)}</small></div>
+            <div class="r">
+              ${k === 0
+                ? (fa.st === "retard" ? `<span class="tag danger">En retard</span>`
+                  : fa.st === "brouillon" ? `<span class="tag">Brouillon</span>`
+                  : fa.st === "emise" ? `<span class="tag warn">Émise</span>`
+                  : `<span class="tag ok">Payée</span>`)
+                : `<span class="tag ok">Payée</span>`}
+              ${dl("la facture")}
+            </div>
+          </div>`).join("")}
+      </div>
+    </div>
+    <div class="dcard">
+      <h3>Situation fiscale</h3>
+      <div class="dgrid">
+        <div><span>Payé sur l'année</span><b>${eur(fisc.paye)}</b></div>
+        <div><span>Base éligible</span><b>${eur(fisc.base)}<small>${fisc.atteint ? "plafond atteint" : "sous le plafond"}</small></b></div>
+        <div><span>Crédit d'impôt estimé</span><b>${eur(fisc.credit)}<small>case 7DB</small></b></div>
+      </div>
+    </div>`;
+  },
+
+  docs: (id, f, i, fi, d) => {
+    const items = [
+      ["Document individuel de prise en charge", d.ref + " · signé le " + d.effet, true],
+      ["Contrat de prestation de services", "signé le " + d.effet, true],
+      ["Plan d'aide personnalisé", "dernière révision du " + d.effet, true],
+      ["Devis initial accepté", "édité le " + d.effet, true],
+      ["Attestation fiscale 2025", "émise le 22/01/2026", true],
+      ["Livret d'accueil remis", "remis en main propre", true],
+      ["Mandat de prélèvement SEPA", REGL[id] === "Prélèvement" ? "actif" : "sans objet — règlement par " + REGL[id].toLowerCase(), REGL[id] === "Prélèvement"]
+    ];
+    return `
+    <div class="dcard">
+      <h3>Pièces du dossier</h3>
+      <div class="dlist">
+        ${items.map(([n,sub,ok])=>`
+          <div class="row">
+            <div class="v">${n}<small>${sub}</small></div>
+            <div class="r">${ok ? dl(n) : `<span class="dlnone">—</span>`}</div>
+          </div>`).join("")}
+      </div>
+    </div>`;
+  }
+};
+
+document.querySelectorAll("#dosTabs button").forEach(b=>{
+  b.onclick = ()=>{
+    dosTab = b.dataset.tab;
+    document.querySelectorAll("#dosTabs button").forEach(x=>x.setAttribute("aria-selected", String(x===b)));
+    renderDossier();
+  };
+});
 
 /* ============================================================
    PERSONNEL
@@ -3658,6 +3949,7 @@ const TITLES = {
   fiscalite:["Bénéficiaires","Attestations fiscales"],
   devis:["Bénéficiaires","Devis"],
   facturation:["Bénéficiaires","Facturation"],
+  dossier:["Bénéficiaires","Dossier bénéficiaire"],
   qualite:["Qualité","Réclamations et événements"],
   liaison:["Qualité","Cahier de liaison"],
   personnel:["Ressources humaines","Personnel"],
