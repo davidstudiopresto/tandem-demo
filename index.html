@@ -597,7 +597,7 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
 
     <button class="navitem" data-view="telegestion">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/><path d="M9.5 8.5l2 2 3.5-3.5"/></svg>
-      Télégestion
+      Pointage
     </button>
 
     <div class="navgroup-label">Bénéficiaires</div>
@@ -832,13 +832,12 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
             <table class="tbl" style="min-width:900px">
               <thead>
                 <tr>
-                  <th style="width:12%">Prévu</th>
-                  <th style="width:21%">Intervenante</th>
-                  <th style="width:21%">Bénéficiaire</th>
-                  <th style="width:10%; text-align:right">Arrivée</th>
-                  <th style="width:10%; text-align:right">Départ</th>
-                  <th style="width:10%; text-align:right">Écart</th>
-                  <th style="width:16%">Pointage</th>
+                  <th style="width:14%">Prévu</th>
+                  <th style="width:25%">Intervenante</th>
+                  <th style="width:25%">Bénéficiaire</th>
+                  <th style="width:12%; text-align:right">Arrivée</th>
+                  <th style="width:12%; text-align:right">Départ</th>
+                  <th style="width:12%; text-align:right">Écart</th>
                 </tr>
               </thead>
               <tbody id="tgBody"></tbody>
@@ -3077,9 +3076,6 @@ function renderTelegestion(){
 
   body.innerHTML = list.map(({v, arr, dep, ecart, moyen, etat})=>{
     const p = st(v.staff), fam = FAM[v.fam];
-    const tag = etat === "manque"
-              ? `<span class="tag danger">Non pointée</span>`
-              : `<span class="tag">${moyen}</span>`;
     const ec = etat === "manque" ? `<span style="color:var(--ink-3)">—</span>`
              : ecart === 0 ? `<span style="color:var(--ink-3)">0 min</span>`
              : `<span style="${Math.abs(ecart) >= 10 ? "color:var(--warn); font-weight:600" : ""}">${ecart > 0 ? "+" : "−"}${Math.abs(ecart)} min</span>`;
@@ -3095,7 +3091,6 @@ function renderTelegestion(){
         <td class="num" style="text-align:right">${etat === "manque" ? "—" : fmt(arr)}</td>
         <td class="num" style="text-align:right">${etat === "manque" ? "—" : fmt(dep)}</td>
         <td class="num" style="text-align:right">${ec}</td>
-        <td>${tag}</td>
       </tr>`;
   }).join("");
 
@@ -3105,11 +3100,10 @@ function renderTelegestion(){
       <td colspan="3"><b>Total · ${list.length} interventions</b></td>
       <td colspan="2" class="num" style="text-align:right">${r1(heures)} h pointées</td>
       <td class="num" style="text-align:right">${cumul >= 0 ? "+" : "−"}${Math.abs(cumul)} min</td>
-      <td></td>
     </tr>`;
 
   if(!list.length)
-    body.innerHTML = `<tr><td colspan="7" style="text-align:center; padding:34px; color:var(--ink-3); font-weight:600">Aucune intervention sur ce filtre.</td></tr>`;
+    body.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:34px; color:var(--ink-3); font-weight:600">Aucune intervention sur ce filtre.</td></tr>`;
 }
 
 document.querySelectorAll("[data-tg]").forEach(b=>{
@@ -3308,7 +3302,7 @@ const TITLES = {
   dashboard:["Exploitation","Tableau de bord"],
   planning:["Exploitation","Planning de la semaine"],
   affectation:["Exploitation","Affectation des interventions"],
-  telegestion:["Exploitation","Télégestion"],
+  telegestion:["Exploitation","Pointage des interventions"],
   absences:["Ressources humaines","Demandes d'absence"],
   familles:["Bénéficiaires","Familles suivies"],
   fiscalite:["Bénéficiaires","Attestations fiscales"],
