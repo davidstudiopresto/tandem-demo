@@ -109,6 +109,17 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
   font-size:10px; font-weight:700; letter-spacing:.11em; text-transform:uppercase;
   color:var(--ink-3); padding:18px 11px 7px;
 }
+.navgrp{display:flex; align-items:center; gap:12px; width:100%; padding:9px 12px; border-radius:var(--r-sm);
+  color:var(--ink-2); font-weight:500; transition:background .14s, color .14s; flex:none}
+.navgrp:hover{background:var(--surface-alt); color:var(--ink)}
+.navgrp .chev{margin-left:auto; flex:none; color:var(--ink-3); transition:transform .18s}
+.navgrp[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.navgrp[aria-expanded="true"]{color:var(--ink); font-weight:600}
+.navsub{display:none; padding:2px 0 6px}
+.navsub.on{display:block}
+.navsub .navitem{padding-left:41px; font-size:12.5px}
+.navsub .navitem::before{left:26px}
+#navRoot{display:flex; flex-direction:column; gap:2px}
 
 /* ---------- main ---------- */
 .main{min-width:0; display:flex; flex-direction:column; min-height:100vh}
@@ -632,101 +643,7 @@ h1,h2,h3,h4{font-family:var(--display); font-weight:400; margin:0; text-wrap:bal
       </div>
     </div>
 
-    <div class="navgroup-label">Exploitation</div>
-    <button class="navitem" data-view="dashboard" aria-current="true">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
-      Tableau de bord
-    </button>
-    <button class="navitem" data-view="planning">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
-      Planning
-    </button>
-    <button class="navitem" data-view="affectation">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 7h9M3.5 12h6M3.5 17h9"/><path d="M15.5 12.5l2.5 2.5 4.5-5"/></svg>
-      Affectation
-      <span class="navbadge hot" id="nb-fill">8</span>
-    </button>
-
-    <button class="navitem" data-view="telegestion">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M10.5 18.5h3"/><path d="M9.5 8.5l2 2 3.5-3.5"/></svg>
-      Pointage
-    </button>
-
-    <div class="navgroup-label">Bénéficiaires</div>
-    <button class="navitem" data-view="familles">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V9.5L12 4l8 5.5V21"/><path d="M9.5 21v-6h5v6"/></svg>
-      Familles
-    </button>
-    <button class="navitem" data-view="fiscalite">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 17l2-2 2 2 2.5-3.5"/></svg>
-      Fiscalité
-    </button>
-    <button class="navitem" data-view="devis">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
-      Devis
-    </button>
-    <button class="navitem" data-view="facturation">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4a1 1 0 011-1h12a1 1 0 011 1v17l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>
-      Facturation
-    </button>
-
-    <div class="navgroup-label">Ressources humaines</div>
-    <button class="navitem" data-view="absences">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3v9l5 3"/><circle cx="12" cy="12" r="9"/></svg>
-      Absences
-      <span class="navbadge hot">3</span>
-    </button>
-    <button class="navitem" data-view="personnel">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M16 5.5a3 3 0 010 5.4M17.5 20a6 6 0 00-2-4.2"/></svg>
-      Personnel
-    </button>
-    <button class="navitem" data-view="contrats">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
-      Documents
-    </button>
-    <button class="navitem" data-view="paie">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M7 9h10M7 13h10M7 17h5"/></svg>
-      Préparation de paie
-    </button>
-    <button class="navitem" data-view="capacite">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
-      Occupation
-    </button>
-
-    <div class="navgroup-label">Qualité</div>
-    <button class="navitem" data-view="qualite">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7.5 3v6c0 4.4-3 8.1-7.5 9-4.5-.9-7.5-4.6-7.5-9V6z"/><path d="M9.2 12.2l2 2 3.6-4"/></svg>
-      Réclamations
-      <span class="navbadge hot">4</span>
-    </button>
-    <button class="navitem" data-view="liaison">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.5 1.5 0 015.5 4H19a1 1 0 011 1v14a1 1 0 01-1 1H5.5A1.5 1.5 0 014 18.5z"/><path d="M8 4v16M11.5 9h5M11.5 13h3"/></svg>
-      Cahier de liaison
-    </button>
-
-    <div class="navgroup-label">Réseau</div>
-    <button class="navitem" data-view="partenaires">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 11a3 3 0 100-6 3 3 0 000 6zM17 19a3 3 0 100-6 3 3 0 000 6z"/><path d="M9.5 9.5l5 5"/></svg>
-      Partenaires
-    </button>
-
-    <div class="navgroup-label">Développement</div>
-    <button class="navitem" data-view="prospects">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="4" width="5" height="16" rx="2"/><rect x="10" y="4" width="5" height="11" rx="2"/><rect x="17" y="4" width="4" height="7" rx="2"/></svg>
-      Prospects
-    </button>
-    <button class="navitem" data-view="recrutement">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20a6.5 6.5 0 0113 0"/><path d="M19 8v6M22 11h-6"/></svg>
-      Recrutement
-    </button>
-
-    <div class="navgroup-label">Paramètres</div>
-    <button class="navitem" data-view="integrations">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 7l3-3 3 3-3 3M10 17l-3 3-3-3 3-3"/><rect x="8" y="8" width="8" height="8" rx="2"/></svg>
-      Intégrations
-    </button>
-
-
+        <div id="navRoot"></div>
   </aside>
 
   <div class="main">
@@ -1720,7 +1637,8 @@ function renderGrid(){
 }
 
 function updateKpis(){
-  document.getElementById("nb-fill").textContent = VACS.filter(v=>!v.staff).length;
+  const b = document.getElementById("nb-affectation");
+  if(b) b.textContent = VACS.filter(v=>!v.staff).length;
 }
 
 /* contrôles de filtre du planning */
@@ -3818,7 +3736,9 @@ function renderKanban(){
       e.preventDefault(); col.classList.remove("drop");
       const l = LEADS.find(x=>x.id === e.dataTransfer.getData("text/plain"));
       if(!l || l.col===c.id) return;
-      l.col = c.id; renderKanban();
+      l.col = c.id; 
+
+renderKanban();
 renderRecrut();
 renderDashboard();
 go("dashboard");
@@ -3939,6 +3859,122 @@ go("dashboard"); toast(`${nom} ajoutée en nouveau contact`);
 /* ============================================================
    NAVIGATION
    ============================================================ */
+const NAV = [
+  {g:null, items:[
+    {v:"dashboard", n:"Tableau de bord", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"9\" rx=\"1.5\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"5\" rx=\"1.5\"/><rect x=\"14\" y=\"12\" width=\"7\" height=\"9\" rx=\"1.5\"/><rect x=\"3\" y=\"16\" width=\"7\" height=\"5\" rx=\"1.5\"/></svg>"}
+  ]},
+  {g:"B\u00e9n\u00e9ficiaires", items:[
+    {v:"familles", n:"Dossiers clients", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 21V9.5L12 4l8 5.5V21\"/><path d=\"M9.5 21v-6h5v6\"/></svg>"},
+    {v:"reevaluation", n:"R\u00e9\u00e9valuations", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 11a7 7 0 017-7h6\"/><path d=\"M14.5 1.5L17.5 4l-3 2.5\"/><path d=\"M20 13a7 7 0 01-7 7H7\"/><path d=\"M9.5 22.5L6.5 20l3-2.5\"/></svg>"},
+    {v:"journal", n:"Journal du dossier", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><path d=\"M4 6h16M4 12h16M4 18h10\"/></svg>"},
+    {v:"devis", n:"Devis", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z\"/><path d=\"M14 3v5h5\"/><path d=\"M9 13h6M9 17h4\"/></svg>"}
+  ]},
+  {g:"Intervenants", items:[
+    {v:"personnel", n:"Liste du personnel", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"9\" cy=\"8\" r=\"3.4\"/><path d=\"M2.5 20a6.5 6.5 0 0113 0\"/><path d=\"M16 5.5a3 3 0 010 5.4M17.5 20a6 6 0 00-2-4.2\"/></svg>"},
+    {v:"contrats", n:"Documents", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z\"/><path d=\"M14 3v5h5\"/><path d=\"M9 13h6M9 17h4\"/></svg>"},
+    {v:"absences", n:"Absences et cong\u00e9s", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><path d=\"M12 3v9l5 3\"/><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg>", b:"3"},
+    {v:"valheures", n:"Validation des heures", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 12.5l5 5L20 6.5\"/></svg>"},
+    {v:"paie", n:"Variables de paie", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"17\" rx=\"2.5\"/><path d=\"M7 9h10M7 13h10M7 17h5\"/></svg>"},
+    {v:"capacite", n:"Taux d'occupation", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 20V10M10 20V4M16 20v-7M22 20H2\"/></svg>"}
+  ]},
+  {g:"Planning", items:[
+    {v:"planning", n:"Vue semaine", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"3\"/><path d=\"M8 3v4M16 3v4M3 10h18\"/></svg>"},
+    {v:"planjour", n:"Vue jour", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5.2l3.2 2\"/></svg>"},
+    {v:"affectation", n:"Affectation", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3.5 7h9M3.5 12h6M3.5 17h9\"/><path d=\"M15.5 12.5l2.5 2.5 4.5-5\"/></svg>", b:"8"},
+    {v:"contraintes", n:"Contraintes et r\u00e8gles", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linejoin=\"round\"><path d=\"M12 3l7.5 3v6c0 4.4-3 8.1-7.5 9-4.5-.9-7.5-4.6-7.5-9V6z\"/></svg>"},
+    {v:"recurrences", n:"R\u00e9currences", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 11a7 7 0 017-7h6\"/><path d=\"M14.5 1.5L17.5 4l-3 2.5\"/><path d=\"M20 13a7 7 0 01-7 7H7\"/><path d=\"M9.5 22.5L6.5 20l3-2.5\"/></svg>"},
+    {v:"urgences", n:"Urgences et astreinte", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7.5v5M12 16v.5\"/></svg>"}
+  ]},
+  {g:null, items:[
+    {v:"carte", n:"Carte des tourn\u00e9es", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linejoin=\"round\"><path d=\"M9 4L3.5 6v14L9 18l6 2 5.5-2V4L15 6z\"/><path d=\"M9 4v14M15 6v14\"/></svg>"}
+  ]},
+  {g:"Qualit\u00e9", items:[
+    {v:"qdash", n:"Qualit\u00e9 et conformit\u00e9", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linejoin=\"round\"><path d=\"M12 3l7.5 3v6c0 4.4-3 8.1-7.5 9-4.5-.9-7.5-4.6-7.5-9V6z\"/></svg>"},
+    {v:"qualite", n:"R\u00e9clamations et \u00e9v\u00e9nements", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 3l7.5 3v6c0 4.4-3 8.1-7.5 9-4.5-.9-7.5-4.6-7.5-9V6z\"/><path d=\"M9.2 12.2l2 2 3.6-4\"/></svg>", b:"4"},
+    {v:"liaison", n:"Cahier de liaison", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 5.5A1.5 1.5 0 015.5 4H19a1 1 0 011 1v14a1 1 0 01-1 1H5.5A1.5 1.5 0 014 18.5z\"/><path d=\"M8 4v16M11.5 9h5M11.5 13h3\"/></svg>"}
+  ]},
+  {g:"Pointage", items:[
+    {v:"telegestion", n:"Suivi du jour", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"6\" y=\"2.5\" width=\"12\" height=\"19\" rx=\"2.5\"/><path d=\"M10.5 18.5h3\"/><path d=\"M9.5 8.5l2 2 3.5-3.5\"/></svg>"},
+    {v:"tgvalid", n:"Validation mensuelle", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 12.5l5 5L20 6.5\"/></svg>"},
+    {v:"tganom", n:"Anomalies", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7.5v5M12 16v.5\"/></svg>"},
+    {v:"tgsynth", n:"Synth\u00e8se mensuelle", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><path d=\"M4 19V5\"/><path d=\"M8 19v-6M12.5 19V9M17 19v-4M21 19H4\"/></svg>"},
+    {v:"tgmodes", n:"Modes de pointage", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1\"/></svg>"},
+    {v:"tgcheck", n:"Checklists d'intervention", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><path d=\"M4 6h16M4 12h16M4 18h10\"/></svg>"}
+  ]},
+  {g:"Facturation", items:[
+    {v:"facturation", n:"Factures du mois", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 21V4a1 1 0 011-1h12a1 1 0 011 1v17l-3-2-3 2-3-2-3 2z\"/><path d=\"M9 8h6M9 12h6M9 16h3\"/></svg>"},
+    {v:"factgen", n:"G\u00e9n\u00e9ration mensuelle", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 11a7 7 0 017-7h6\"/><path d=\"M14.5 1.5L17.5 4l-3 2.5\"/><path d=\"M20 13a7 7 0 01-7 7H7\"/><path d=\"M9.5 22.5L6.5 20l3-2.5\"/></svg>"},
+    {v:"factrel", n:"Relances et balance \u00e2g\u00e9e", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7.5v5M12 16v.5\"/></svg>"},
+    {v:"factenc", n:"Encaissements", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><path d=\"M17 6.5A6.5 6.5 0 007 12a6.5 6.5 0 0010 5.5\"/><path d=\"M4 10.5h8M4 14h8\"/></svg>"},
+    {v:"factrap", n:"Rapprochement bancaire", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 12.5l5 5L20 6.5\"/></svg>"},
+    {v:"factavo", n:"Avoirs", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z\"/><path d=\"M14 3v5h5\"/></svg>"},
+    {v:"factsepa", n:"Mandats SEPA", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z\"/><path d=\"M14 3v5h5\"/></svg>"},
+    {v:"factexo", n:"Exon\u00e9rations", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linejoin=\"round\"><path d=\"M12 3l7.5 3v6c0 4.4-3 8.1-7.5 9-4.5-.9-7.5-4.6-7.5-9V6z\"/></svg>"},
+    {v:"fiscalite", n:"Attestations fiscales", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8z\"/><path d=\"M14 3v5h5\"/><path d=\"M9 17l2-2 2 2 2.5-3.5\"/></svg>"},
+    {v:"factind", n:"Indicateurs de facturation", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><path d=\"M4 19V5\"/><path d=\"M8 19v-6M12.5 19V9M17 19v-4M21 19H4\"/></svg>"}
+  ]},
+  {g:"Communication", items:[
+    {v:"messagerie", n:"Messagerie", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linejoin=\"round\"><path d=\"M20 15a2 2 0 01-2 2H8l-4 3V6a2 2 0 012-2h12a2 2 0 012 2z\"/></svg>"},
+    {v:"notifications", n:"Notifications", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><path d=\"M18 9a6 6 0 10-12 0c0 6-2 7-2 7h16s-2-1-2-7\"/><path d=\"M10.5 20a2 2 0 003 0\"/></svg>"}
+  ]},
+  {g:"D\u00e9veloppement", items:[
+    {v:"prospects", n:"Prospects", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><rect x=\"3\" y=\"4\" width=\"5\" height=\"16\" rx=\"2\"/><rect x=\"10\" y=\"4\" width=\"5\" height=\"11\" rx=\"2\"/><rect x=\"17\" y=\"4\" width=\"4\" height=\"7\" rx=\"2\"/></svg>"},
+    {v:"recrutement", n:"Recrutement", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"9\" cy=\"8\" r=\"3.4\"/><path d=\"M2.5 20a6.5 6.5 0 0113 0\"/><path d=\"M19 8v6M22 11h-6\"/></svg>"}
+  ]},
+  {g:null, items:[
+    {v:"partenaires", n:"Partenaires", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M7 11a3 3 0 100-6 3 3 0 000 6zM17 19a3 3 0 100-6 3 3 0 000 6z\"/><path d=\"M9.5 9.5l5 5\"/></svg>"}
+  ]},
+  {g:"Pilotage", items:[
+    {v:"pjour", n:"Journ\u00e9e en cours", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5.2l3.2 2\"/></svg>"},
+    {v:"pkpi", n:"Indicateurs", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><path d=\"M4 19V5\"/><path d=\"M8 19v-6M12.5 19V9M17 19v-4M21 19H4\"/></svg>"},
+    {v:"exports", n:"Exports", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 4v11M7.5 10.5l4.5 4.5 4.5-4.5\"/><path d=\"M4 20h16\"/></svg>"}
+  ]},
+  {g:"Administration", items:[
+    {v:"parametres", n:"Param\u00e8tres de la structure", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.2 5.2l2.1 2.1M16.7 16.7l2.1 2.1M18.8 5.2l-2.1 2.1M7.3 16.7l-2.1 2.1\"/></svg>"},
+    {v:"utilisateurs", n:"Utilisateurs", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\"><circle cx=\"9\" cy=\"8\" r=\"3.2\"/><path d=\"M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5\"/><path d=\"M16 5.2a3.2 3.2 0 010 5.6M18 14.8c2 .7 3 2.6 3 5.2\"/></svg>"},
+    {v:"roles", n:"R\u00f4les et habilitations", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linejoin=\"round\"><path d=\"M12 3l7.5 3v6c0 4.4-3 8.1-7.5 9-4.5-.9-7.5-4.6-7.5-9V6z\"/></svg>"},
+    {v:"integrations", n:"Int\u00e9grations", i:"<svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M14 7l3-3 3 3-3 3M10 17l-3 3-3-3 3-3\"/><rect x=\"8\" y=\"8\" width=\"8\" height=\"8\" rx=\"2\"/></svg>"}
+  ]}
+];
+
+const GROUP_OF = {};
+NAV.forEach(g => g.items.forEach(it => GROUP_OF[it.v] = g.g));
+
+function renderNav(){
+  const root = document.getElementById("navRoot");
+  root.innerHTML = NAV.map((g,k)=>{
+    const items = g.items.map(it=>`
+      <button class="navitem" data-view="${it.v}">${it.i}${it.n}
+        ${it.b ? `<span class="navbadge hot" id="nb-${it.v}">${it.b}</span>` : ""}</button>`).join("");
+    if(!g.g) return items;
+    return `
+      <button class="navgrp" data-grp="${k}" aria-expanded="false">
+        ${g.items[0].i}${g.g}
+        <svg class="chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="navsub" data-sub="${k}">${items}</div>`;
+  }).join("");
+
+  root.querySelectorAll(".navgrp").forEach(b=>{
+    b.onclick = ()=>{
+      const open = b.getAttribute("aria-expanded") === "true";
+      b.setAttribute("aria-expanded", String(!open));
+      root.querySelector(`[data-sub="${b.dataset.grp}"]`).classList.toggle("on", !open);
+    };
+  });
+}
+renderNav();
+
+/* le groupe qui contient l'écran courant s'ouvre tout seul */
+function openNavGroup(v){
+  const g = GROUP_OF[v];
+  document.querySelectorAll(".navgrp").forEach(b=>{
+    const inside = NAV[+b.dataset.grp].g === g;
+    b.setAttribute("aria-expanded", String(inside));
+    document.querySelector(`[data-sub="${b.dataset.grp}"]`).classList.toggle("on", inside);
+  });
+}
+
 const TITLES = {
   dashboard:["Exploitation","Tableau de bord"],
   planning:["Exploitation","Planning de la semaine"],
@@ -3961,6 +3997,8 @@ const TITLES = {
   recrutement:["Développement","Recrutement"],
   integrations:["Paramètres","Intégrations"]
 };
+NAV.forEach(g => g.items.forEach(it =>{ if(!TITLES[it.v]) TITLES[it.v] = [g.g || "Exploitation", it.n]; }));
+
 function go(v){
   document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on", s.id==="view-"+v));
   document.querySelectorAll(".navitem").forEach(b=>b.setAttribute("aria-current", String(b.dataset.view===v)));
@@ -3969,6 +4007,7 @@ function go(v){
   document.querySelectorAll("#weekNav").forEach(b=>b.style.display = v==="planning" ? "" : "none");
   document.getElementById("todayLabel").hidden = v !== "dashboard";
   window.scrollTo({top:0, behavior:"instant"});
+  openNavGroup(v);
   if(v === "planning") renderGrid();
   if(v === "dashboard") drawCharts();
 }
@@ -4013,6 +4052,758 @@ renderQualite();
 renderLiaison();
 renderKanban();
 renderRecrut();
+/* ============================================================
+   RUBRIQUES COMPLÉMENTAIRES
+   Chaque écran est décrit ici et construit par le même moteur.
+   ============================================================ */
+const tileHTML = ([lb,v,sub,al]) => `
+  <div class="tile ${al ? "alert" : ""}">
+    <div class="lb">${lb}</div>
+    <div class="v num">${v}</div>
+    <div class="sub">${sub}</div>
+  </div>`;
+
+function buildScreen(key, c){
+  const sec = document.createElement("section");
+  sec.className = "view";
+  sec.id = "view-" + key;
+  const head = c.tiles ? `<div class="tiles tiles-4">${c.tiles().map(tileHTML).join("")}</div>` : "";
+  const bar  = (c.note || c.action) ? `
+    <div class="toolbar" style="margin-top:${c.tiles ? 16 : 20}px">
+      ${c.note ? `<span class="note">${c.note}</span>` : ""}
+      ${c.action ? `<button class="btn dark" style="margin-left:auto" onclick="toast('${c.action} — hors périmètre du POC')">${c.action}</button>` : ""}
+    </div>` : "";
+  const table = c.cols ? `
+    <div class="tablewrap"${c.tiles || c.note || c.action ? "" : ' style="margin-top:20px"'}>
+      <div class="tscroll">
+        <table class="tbl" style="min-width:${c.min || 900}px">
+          <thead><tr>${c.cols.map(([w,l,a])=>`<th style="width:${w}%${a ? "; text-align:" + a : ""}">${l}</th>`).join("")}</tr></thead>
+          <tbody>${c.rows().map(r=>`<tr${r.off ? ' class="off"' : ''}>${(r.c || r).map((cell,i)=>{
+            const a = c.cols[i][2];
+            return `<td${a ? ` class="num" style="text-align:${a}"` : ""}>${cell}</td>`;
+          }).join("")}</tr>`).join("")}</tbody>
+        </table>
+      </div>
+    </div>` : "";
+  sec.innerHTML = head + bar + table + (c.html ? c.html() : "");
+  document.querySelector(".viewport").appendChild(sec);
+}
+
+const nom2 = p => `<div class="pname"><div class="pid"><b>${p.nom}</b><small>${p.c} · ${cap(p.sect)}</small></div></div>`;
+const famCell = id => `<div class="pname"><div class="pid"><b>${FAM[id].n}</b><small>${FAM[id].a}</small></div></div>`;
+const FAMIDS = Object.keys(FAM);
+const GIRS = FAMIDS.map(id=>FICHE[id].gir);
+
+const SCREENS = {
+
+/* ---------- BÉNÉFICIAIRES ---------- */
+reevaluation: {
+  note:"Le plan d'aide est réévalué chaque année, et à chaque changement notable de l'état de santé.",
+  action:"Lancer une réévaluation",
+  min:940,
+  tiles:()=>[
+    ["Réévaluations en retard","3","dépassent la date anniversaire",true],
+    ["À planifier sous 60 jours","5","dont 2 sorties d'hospitalisation"],
+    ["Réalisées cette année","11","sur 15 dossiers"],
+    ["Délai moyen","14 j","entre la demande et la visite"]
+  ],
+  cols:[[22,"Bénéficiaire"],[10,"GIR"],[14,"Dernière évaluation"],[14,"Prochaine échéance"],[24,"Écart constaté"],[16,"Statut"]],
+  rows:()=>FAMIDS.map((id,k)=>{
+    const retard = k % 5 === 1, proche = k % 5 === 3;
+    const ecart = k % 3 === 0 ? "Besoins stables" : k % 3 === 1 ? "Perte d'autonomie : +2 h par semaine" : "Amélioration : −1 h par semaine";
+    return {off: !retard && !proche, c:[
+      famCell(id),
+      `<span class="tag">${FICHE[id].gir}</span>`,
+      `<span style="color:var(--ink-3)">${DIPC[id].effet}</span>`,
+      `<span style="${retard ? "color:var(--danger); font-weight:600" : ""}">${DIPC[id].revision}</span>`,
+      `<span class="muted">${ecart}</span>`,
+      retard ? `<span class="tag danger">En retard</span>` : proche ? `<span class="tag warn">À planifier</span>` : `<span class="tag ok">À jour</span>`
+    ]};
+  })
+},
+
+journal: {
+  note:"Toute écriture au dossier est horodatée et conservée : exigence de traçabilité de l'évaluation externe.",
+  min:900,
+  cols:[[13,"Date"],[20,"Bénéficiaire"],[18,"Auteur"],[33,"Événement"],[16,"Nature"]],
+  rows:()=>{
+    const ev = [
+      ["25/09/2026","delaunay","Awa Traoré","Transmission : petit-déjeuner non pris, famille prévenue","liaison"],
+      ["24/09/2026","roussel","Sandrine Meunier","Déclaration d'événement indésirable : chute sans gravité","qualite"],
+      ["24/09/2026","lecomte","Marie Laurent","Réclamation enregistrée : retards répétés le matin","qualite"],
+      ["23/09/2026","farrugia","Marie Laurent","Avenant au DIPC signé : passage de 14 à 16 heures","dipc"],
+      ["22/09/2026","vidal","Marie Laurent","Facture de septembre émise","factu"],
+      ["21/09/2026","abitbol","Malika Hadj","Transmission : erreur de pilulier détectée avant administration","qualite"],
+      ["19/09/2026","nguyen","Marie Laurent","Réévaluation du plan d'aide programmée au 12/10","eval"],
+      ["18/09/2026","perrin","Nadia Belkacem","Changement d'intervenante attitrée","plan"],
+      ["15/09/2026","kowalski","Marie Laurent","Attestation fiscale 2025 envoyée par courriel","factu"],
+      ["12/09/2026","dasilva","Marie Laurent","Ouverture du dossier — prise en charge temporaire","plan"]
+    ];
+    const LB = {liaison:["Transmission",""], qualite:["Qualité","danger"], dipc:["Contractuel","warn"],
+                factu:["Facturation",""], eval:["Évaluation","warn"], plan:["Plan d'aide",""]};
+    return ev.map(([d,id,who,txt,k])=>[
+      `<span style="color:var(--ink-3)">${d}</span>`,
+      famCell(id),
+      `<span class="muted">${who}</span>`,
+      `<span class="muted">${txt}</span>`,
+      `<span class="tag ${LB[k][1]}">${LB[k][0]}</span>`
+    ]);
+  }
+},
+
+/* ---------- INTERVENANTS ---------- */
+valheures: {
+  note:"Les heures pointées sont comparées aux heures planifiées avant d'être transmises à la paie.",
+  action:"Valider le mois",
+  min:940,
+  tiles:()=>[
+    ["Heures à valider","1 131 h","sur septembre"],
+    ["Écarts détectés","6","au-delà de 15 minutes",true],
+    ["Intervenantes validées","7 / 12","reste 5 dossiers"],
+    ["Transmis à la paie","0","échéance le 28 septembre"]
+  ],
+  cols:[[26,"Intervenante"],[13,"Planifié","right"],[13,"Pointé","right"],[12,"Écart","right"],[18,"Contrôle"],[18,"Statut"]],
+  rows:()=>STAFF.map((p,k)=>{
+    const plan = Math.round(hoursOf(p.id) * WEEKS_PER_MONTH);
+    const ec = [(k*7)%11 - 5, 0, 2, -3][k % 4];
+    const pointe = plan + ec;
+    const ok = k % 3 !== 1;
+    return [
+      nom2(p),
+      `${plan} h`,
+      `<span style="font-weight:600">${pointe} h</span>`,
+      ec === 0 ? `<span style="color:var(--ink-3)">—</span>` : `<span style="${Math.abs(ec) > 3 ? "color:var(--warn); font-weight:600" : ""}">${ec > 0 ? "+" : "−"}${Math.abs(ec)} h</span>`,
+      `<span class="muted">${Math.abs(ec) > 3 ? "Écart à justifier" : "Conforme au planning"}</span>`,
+      ok ? `<span class="tag ok">Validé</span>` : `<span class="tag warn">À valider</span>`
+    ];
+  })
+},
+
+/* ---------- PLANNING ---------- */
+planjour: {
+  note:"Vendredi 25 septembre 2026 — vue chronologique de la journée, tous intervenants confondus.",
+  min:900,
+  tiles:()=>{
+    const j = VACS.filter(v=>v.day === 4);
+    return [
+      ["Interventions", String(j.length), "réparties sur 12 intervenantes"],
+      ["Heures planifiées", r1(j.reduce((t,v)=>t+(v.e-v.s)/60,0)) + " h", "dont 2 gardes de nuit"],
+      ["À pourvoir", String(j.filter(v=>!v.staff).length), "arrêt maladie en cours", j.some(v=>!v.staff)],
+      ["Première / dernière", fmt(Math.min(...j.map(v=>v.s))) + " → " + fmt(Math.max(...j.map(v=>v.e))), "amplitude de la journée"]
+    ];
+  },
+  cols:[[13,"Horaire"],[22,"Intervenante"],[24,"Bénéficiaire"],[22,"Prestation"],[10,"Durée","right"],[9,"Secteur"]],
+  rows:()=>VACS.filter(v=>v.day === 4).sort((a,b)=>a.s-b.s).map(v=>({
+    off: !v.staff,
+    c:[
+      `<span style="color:var(--ink-3)">${fmt(v.s)} – ${fmt(v.e)}</span>`,
+      v.staff ? nom2(st(v.staff)) : `<span class="tag danger">À pourvoir</span>`,
+      famCell(v.fam),
+      `<span class="muted">${PRESTA[v.pr].n}</span>`,
+      `${r1((v.e-v.s)/60)} h`,
+      `<span class="muted">${cap(FAM[v.fam].s)}</span>`
+    ]
+  }))
+},
+
+contraintes: {
+  note:"Ces règles sont appliquées automatiquement à chaque affectation et à chaque déplacement d'intervention.",
+  min:940,
+  tiles:()=>[
+    ["Règles actives","8","dont 5 bloquantes"],
+    ["Contrôles cette semaine","214","à chaque modification du planning"],
+    ["Blocages levés","3","après arbitrage du responsable"],
+    ["Conformité","98 %","des interventions sans alerte"]
+  ],
+  cols:[[26,"Règle"],[13,"Source"],[31,"Contrôle appliqué"],[14,"Niveau"],[16,"Déclenchements"]],
+  rows:()=>[
+    ["Repos quotidien de 11 heures","Code du travail","Onze heures consécutives entre la fin d'une journée et la reprise","red","4 cette semaine"],
+    ["Chevauchement d'interventions","Exploitation","Deux interventions ne peuvent se superposer pour une même personne","red","2 cette semaine"],
+    ["Habilitation requise","Qualité","Toilette, garde de nuit, Alzheimer et Parkinson exigent une habilitation","red","6 cette semaine"],
+    ["Temps de trajet inter-vacation","Exploitation","Durée de parcours réelle entre deux domiciles selon le mode de déplacement","orange","11 cette semaine"],
+    ["Durée contractuelle hebdomadaire","Contrat de travail","Alerte au-delà des heures prévues au contrat","orange","7 cette semaine"],
+    ["Six jours consécutifs","Code du travail","Un jour de repos hebdomadaire obligatoire","red","1 cette semaine"],
+    ["Travailleur de nuit","CCN IDCC 3127","Suivi renforcé au-delà de 270 heures de nuit par an","orange","2 ce mois"],
+    ["Intervenante habituelle","Qualité de service","Privilégier la continuité du binôme auprès du bénéficiaire","blue","19 cette semaine"]
+  ].map(([n,src,ctl,lv,cnt])=>[
+    `<b style="font-weight:600">${n}</b>`,
+    `<span class="muted">${src}</span>`,
+    `<span class="muted">${ctl}</span>`,
+    lv === "red" ? `<span class="tag danger">Bloquant</span>` : lv === "orange" ? `<span class="tag warn">Avertissement</span>` : `<span class="tag">Information</span>`,
+    `<span class="muted">${cnt}</span>`
+  ])
+},
+
+recurrences: {
+  note:"Une récurrence génère automatiquement les interventions de chaque semaine.",
+  action:"Créer une récurrence",
+  min:940,
+  cols:[[22,"Intervenante"],[22,"Bénéficiaire"],[20,"Prestation"],[16,"Jours"],[12,"Horaire"],[8,"Durée","right"]],
+  rows:()=>MISSIONS.map(([sid,fid,pr,days,a,b])=>[
+    nom2(st(sid)),
+    famCell(fid),
+    `<span class="muted">${PRESTA[pr].n}</span>`,
+    `<span class="muted">${days.map(d=>DAYS[d].slice(0,3)).join(", ")}</span>`,
+    `<span style="color:var(--ink-3)">${a} – ${b}</span>`,
+    `${r1((toMin(b)-toMin(a))/60)} h`
+  ])
+},
+
+urgences: {
+  note:"Astreinte téléphonique assurée par la responsable de secteur, 7 jours sur 7 de 7 h à 21 h.",
+  action:"Déclencher un remplacement",
+  min:900,
+  tiles:()=>[
+    ["Appels cette semaine","9","dont 3 hors horaires d'agence"],
+    ["Remplacements en urgence","4","tous pourvus"],
+    ["Délai moyen de résolution","38 min","entre l'appel et la solution"],
+    ["Ouverts","2","en cours de traitement",true]
+  ],
+  cols:[[13,"Reçu le"],[16,"Origine"],[20,"Bénéficiaire"],[27,"Motif"],[12,"Délai"],[12,"Statut"]],
+  rows:()=>[
+    ["25/09 07:12","Intervenante","lecomte","Panne de métro, retard annoncé de 40 minutes","—","ouvert"],
+    ["25/09 06:48","Famille","roussel","Chute pendant la nuit, demande de passage anticipé","—","ouvert"],
+    ["24/09 19:03","Intervenante","nguyen","Arrêt maladie déclaré pour le lendemain","52 min","clos"],
+    ["24/09 08:21","Famille","abitbol","Hospitalisation, interventions à suspendre","31 min","clos"],
+    ["23/09 20:40","Bénéficiaire","vidal","Clés oubliées, impossible d'entrer","24 min","clos"],
+    ["22/09 06:55","Intervenante","farrugia","Véhicule en panne, tournée à redistribuer","45 min","clos"]
+  ].map(([d,o,id,m,delai,st2])=>({off: st2 === "clos", c:[
+    `<span style="color:var(--ink-3)">${d}</span>`,
+    `<span class="muted">${o}</span>`,
+    famCell(id),
+    `<span class="muted">${m}</span>`,
+    `<span class="muted">${delai}</span>`,
+    st2 === "ouvert" ? `<span class="tag danger">En cours</span>` : `<span class="tag ok">Résolu</span>`
+  ]}))
+},
+
+/* ---------- POINTAGE ---------- */
+tgvalid: {
+  note:"Les heures pointées deviennent les heures facturées une fois validées.",
+  action:"Valider les heures de septembre",
+  min:940,
+  tiles:()=>[
+    ["Heures pointées","1 118 h","sur 1 131 h planifiées"],
+    ["Taux de couverture","94 %","interventions effectivement pointées"],
+    ["En attente de validation","5","intervenantes",true],
+    ["Impact facturation","− 13 h","par rapport au planifié"]
+  ],
+  cols:[[26,"Intervenante"],[14,"Planifié","right"],[14,"Pointé","right"],[12,"Non pointé","right"],[16,"Anomalies"],[18,"Statut"]],
+  rows:()=>STAFF.map((p,k)=>{
+    const plan = Math.round(hoursOf(p.id) * WEEKS_PER_MONTH);
+    const manq = [0,0,2,1,0,3][k % 6];
+    const anom = [0,1,0,2,0,1][k % 6];
+    return [
+      nom2(p),
+      `${plan} h`,
+      `<span style="font-weight:600">${plan - manq} h</span>`,
+      manq ? `<span style="color:var(--warn); font-weight:600">${manq} h</span>` : `<span style="color:var(--ink-3)">—</span>`,
+      anom ? `<span class="tag warn">${anom} à traiter</span>` : `<span class="tag ok">Aucune</span>`,
+      k % 3 === 2 ? `<span class="tag warn">À valider</span>` : `<span class="tag ok">Validé</span>`
+    ];
+  })
+},
+
+tganom: {
+  note:"Une anomalie doit être justifiée avant la validation mensuelle des heures.",
+  min:960,
+  tiles:()=>[
+    ["Anomalies ouvertes","6","à justifier avant le 28",true],
+    ["Retards de pointage","4","premier motif"],
+    ["Pointages hors zone","1","hors du domicile déclaré"],
+    ["Résolues ce mois","17","délai moyen de 2 jours"]
+  ],
+  cols:[[12,"Date"],[19,"Intervenante"],[19,"Bénéficiaire"],[17,"Type"],[21,"Détail"],[12,"Statut"]],
+  rows:()=>[
+    ["25/09","fatou","lecomte","Retard de pointage","Arrivée pointée 7 minutes après l'heure prévue","ouvert"],
+    ["25/09","malika","aitouarab","Départ anticipé","Sortie 4 minutes avant la fin planifiée","ouvert"],
+    ["25/09","nadia","perrin","Écart de durée","12 minutes de moins que prévu","ouvert"],
+    ["24/09","rosa","nguyen","Pointage manquant","Aucun pointage d'arrivée enregistré","ouvert"],
+    ["24/09","celine","gonzalez","Pointage hors zone","Pointage à 340 m du domicile déclaré","ouvert"],
+    ["23/09","awa","delaunay","Retard de pointage","Arrivée pointée 9 minutes après l'heure prévue","ouvert"],
+    ["22/09","fatou","kowalski","Écart de durée","Intervention prolongée de 18 minutes","clos"],
+    ["21/09","nadia","thibault","Pointage manquant","Régularisé par la responsable de secteur","clos"]
+  ].map(([d,sid,fid,t,det,st2])=>({off: st2 === "clos", c:[
+    `<span style="color:var(--ink-3)">${d}</span>`,
+    nom2(st(sid)),
+    famCell(fid),
+    `<span class="muted">${t}</span>`,
+    `<span class="muted">${det}</span>`,
+    st2 === "ouvert" ? `<span class="tag warn">À justifier</span>` : `<span class="tag ok">Résolue</span>`
+  ]}))
+},
+
+tgsynth: {
+  note:"Synthèse transmise à la paie et reprise dans la facturation des familles.",
+  action:"Exporter la synthèse",
+  min:960,
+  cols:[[24,"Intervenante"],[13,"Planifié","right"],[13,"Pointé","right"],[13,"Nuit","right"],[13,"Dimanche","right"],[12,"Écart","right"],[12,"Couverture","right"]],
+  rows:()=>STAFF.map((p,k)=>{
+    const plan = Math.round(hoursOf(p.id) * WEEKS_PER_MONTH);
+    const ec = [(k*5)%9 - 4, 0, -2, 1][k % 4];
+    const nuit = Math.round(VACS.filter(v=>v.staff===p.id && v.pr==="nuit").reduce((t,v)=>t+(v.e-v.s)/60,0) * WEEKS_PER_MONTH);
+    const dim = Math.round(VACS.filter(v=>v.staff===p.id && v.day===6).reduce((t,v)=>t+(v.e-v.s)/60,0) * WEEKS_PER_MONTH);
+    return [
+      nom2(p), `${plan} h`, `<span style="font-weight:600">${plan+ec} h</span>`,
+      nuit ? `${nuit} h` : `<span style="color:var(--ink-3)">—</span>`,
+      dim ? `${dim} h` : `<span style="color:var(--ink-3)">—</span>`,
+      ec === 0 ? `<span style="color:var(--ink-3)">—</span>` : `${ec > 0 ? "+" : "−"}${Math.abs(ec)} h`,
+      `${Math.round((plan+ec)/plan*100)} %`
+    ];
+  })
+},
+
+tgmodes: {
+  note:"Chaque bénéficiaire dispose du mode de pointage adapté à son domicile et à son équipement.",
+  min:900,
+  tiles:()=>[
+    ["QR code au domicile","8 foyers","autocollant posé à l'entrée"],
+    ["Badge NFC","4 foyers","pour les domiciles sans réseau"],
+    ["Application mobile","3 foyers","géolocalisation à l'arrivée"],
+    ["Pointage manuel","0","régularisation par l'agence uniquement"]
+  ],
+  cols:[[24,"Bénéficiaire"],[20,"Mode de pointage"],[20,"Équipement"],[18,"Posé le"],[18,"État"]],
+  rows:()=>FAMIDS.map((id,k)=>{
+    const m = k % 3 === 0 ? ["QR code au domicile","Autocollant plastifié"] :
+              k % 3 === 1 ? ["Badge NFC","Badge collé près de la porte"] :
+                            ["Application mobile","Téléphone de l'intervenante"];
+    const usure = k % 7 === 3;
+    return [
+      famCell(id),
+      `<span class="muted">${m[0]}</span>`,
+      `<span class="muted">${m[1]}</span>`,
+      `<span style="color:var(--ink-3)">${DIPC[id].effet}</span>`,
+      usure ? `<span class="tag warn">Support à remplacer</span>` : `<span class="tag ok">Opérationnel</span>`
+    ];
+  })
+},
+
+tgcheck: {
+  note:"La checklist s'affiche sur le téléphone de l'intervenante et se coche au fil de l'intervention.",
+  action:"Créer une checklist",
+  min:900,
+  cols:[[24,"Prestation"],[36,"Points de contrôle"],[14,"Durée type","right"],[13,"Obligatoire"],[13,"Taux de complétion","right"]],
+  rows:()=>[
+    ["Toilette & soins d'hygiène","Hygiène des mains · toilette complète · habillage · réfection du lit · transmission",  "2 h","oui","96 %"],
+    ["Mobilité & transferts","Vérification du matériel · transfert sécurisé · marche accompagnée · installation","3 h","oui","93 %"],
+    ["Traitements & pilulier","Contrôle du pilulier · vérification des dates · prise accompagnée · traçabilité","2 h","oui","99 %"],
+    ["Accompagnement médical","Préparation des documents · trajet · attente · compte rendu à la famille","2 h","non","88 %"],
+    ["Garde de nuit","Coucher · surveillance · passages nocturnes · lever · transmission du matin","11 h","oui","97 %"]
+  ].map(([n,pts,d,ob,tx])=>[
+    `<b style="font-weight:600">${n}</b>`,
+    `<span class="muted">${pts}</span>`,
+    d,
+    ob === "oui" ? `<span class="tag">Obligatoire</span>` : `<span class="tag" style="opacity:.6">Facultative</span>`,
+    tx
+  ])
+},
+
+/* ---------- FACTURATION ---------- */
+factgen: {
+  note:"Contrôles effectués avant d'éditer les factures : heures non validées, anomalies de pointage, plans d'aide expirés.",
+  action:"Générer les factures",
+  min:940,
+  tiles:()=>[
+    ["Dossiers à facturer","15","période du 1er au 30 septembre"],
+    ["Contrôles bloquants","2","à lever avant génération",true],
+    ["Avertissements","3","génération possible malgré tout"],
+    ["Montant prévisionnel","31 614 €","sur la base des heures pointées"]
+  ],
+  cols:[[24,"Bénéficiaire"],[12,"Heures","right"],[14,"Montant estimé","right"],[34,"Contrôle"],[16,"Statut"]],
+  rows:()=>FAMIDS.map((id,k)=>{
+    const f = factureDe(id);
+    const bloc = k % 7 === 2, avert = k % 5 === 1;
+    return [
+      famCell(id),
+      `${Math.round(f.heures)} h`,
+      `<span style="font-weight:600">${eur(f.brut)}</span>`,
+      `<span class="muted">${bloc ? "Heures de pointage non validées" : avert ? "Plan d'aide à réévaluer sous 30 jours" : "Aucune anomalie"}</span>`,
+      bloc ? `<span class="tag danger">Bloqué</span>` : avert ? `<span class="tag warn">Avertissement</span>` : `<span class="tag ok">Prêt</span>`
+    ];
+  })
+},
+
+factrel: {
+  note:"Trois niveaux de relance : rappel courtois, mise en demeure, puis transmission au recouvrement.",
+  action:"Lancer les relances",
+  min:960,
+  tiles:()=>[
+    ["Total impayé","3 678 €","2 factures en retard",true],
+    ["Retard moyen","23 j","au-delà de l'échéance"],
+    ["Relances envoyées","7","ce mois"],
+    ["Recouvré après relance","4 210 €","sur les trois derniers mois"]
+  ],
+  cols:[[14,"Référence"],[22,"Bénéficiaire"],[14,"Reste dû","right"],[13,"Échéance"],[10,"Retard","right"],[15,"Niveau"],[12,"Action"]],
+  rows:()=>[
+    ["FA-2026-0912","lecomte",1984,"05/09/2026",20,2],
+    ["FA-2026-0917","vidal",1694,"05/09/2026",20,1],
+    ["FA-2026-0822","gonzalez",1043,"05/08/2026",51,3],
+    ["FA-2026-0834","thibault",712,"05/08/2026",51,1]
+  ].map(([ref,id,du,ech,ret,niv])=>[
+    `<span style="color:var(--ink-3)">${ref}</span>`,
+    famCell(id),
+    `<span style="font-weight:600">${eur(du)}</span>`,
+    `<span class="muted">${ech}</span>`,
+    `<span style="color:var(--danger); font-weight:600">${ret} j</span>`,
+    niv === 1 ? `<span class="tag">Rappel</span>` : niv === 2 ? `<span class="tag warn">Mise en demeure</span>` : `<span class="tag danger">Recouvrement</span>`,
+    `<span class="muted">Relancer</span>`
+  ])
+},
+
+factenc: {
+  note:"Encaissements rapprochés automatiquement des factures émises.",
+  min:900,
+  tiles:()=>[
+    ["Encaissé en septembre","7 139 €","8 règlements"],
+    ["Prélèvements SEPA","5 402 €","présentés le 8 du mois"],
+    ["CESU préfinancé","1 020 €","3 bénéficiaires"],
+    ["Virements","717 €","hors financements publics"]
+  ],
+  cols:[[13,"Date"],[24,"Bénéficiaire"],[16,"Moyen"],[15,"Montant","right"],[18,"Facture"],[14,"Statut"]],
+  rows:()=>FAMIDS.slice(0,9).map((id,k)=>{
+    const f = factureDe(id);
+    return [
+      `<span style="color:var(--ink-3)">${8 + k}/09/2026</span>`,
+      famCell(id),
+      `<span class="muted">${REGL[id]}</span>`,
+      `<span style="font-weight:600">${eur(f.reste)}</span>`,
+      `<span class="muted">FA-2026-09${String(k+10).padStart(2,"0")}</span>`,
+      k % 6 === 4 ? `<span class="tag warn">À rapprocher</span>` : `<span class="tag ok">Rapproché</span>`
+    ];
+  })
+},
+
+factrap: {
+  note:"Les mouvements bancaires sont confrontés aux factures ouvertes ; le rapprochement automatique couvre la majorité des lignes.",
+  action:"Importer un relevé",
+  min:940,
+  tiles:()=>[
+    ["Mouvements importés","24","relevé du 1er au 25 septembre"],
+    ["Rapprochés automatiquement","19","79 % des lignes"],
+    ["À rapprocher à la main","5","dont 2 virements de département",true],
+    ["Écart de trésorerie","0 €","relevé et comptabilité alignés"]
+  ],
+  cols:[[13,"Date"],[26,"Émetteur"],[15,"Montant","right"],[20,"Facture"],[13,"Origine"],[13,"Statut"]],
+  rows:()=>[
+    ["24/09","Département de Paris — APA","12 480 €","12 factures","Financeur","auto"],
+    ["22/09","M. BEHAR SIMON","3 124 €","FA-2026-0911","Virement","auto"],
+    ["20/09","PRLV SEPA GROUPE 09-2026","5 402 €","7 factures","Prélèvement","auto"],
+    ["18/09","CESU DOMISERVE","1 020 €","3 factures","CESU","auto"],
+    ["17/09","MME LECOMTE H.","900 €","—","Virement","manuel"],
+    ["15/09","CPAM DE PARIS","1 640 €","—","Financeur","manuel"],
+    ["12/09","M. DA SILVA","2 626 €","FA-2026-0914","Virement","auto"]
+  ].map(([d,em,m,fa,or,stt])=>[
+    `<span style="color:var(--ink-3)">${d}</span>`,
+    `<span class="muted">${em}</span>`,
+    `<span style="font-weight:600">${m}</span>`,
+    `<span class="muted">${fa}</span>`,
+    `<span class="muted">${or}</span>`,
+    stt === "auto" ? `<span class="tag ok">Rapproché</span>` : `<span class="tag warn">À traiter</span>`
+  ])
+},
+
+factavo: {
+  note:"Un avoir annule tout ou partie d'une facture déjà émise ; la facture d'origine n'est jamais modifiée.",
+  action:"Établir un avoir",
+  min:900,
+  cols:[[14,"Référence"],[22,"Bénéficiaire"],[14,"Facture d'origine"],[14,"Montant","right"],[24,"Motif"],[12,"Statut"]],
+  rows:()=>[
+    ["AV-2026-0031","kowalski","FA-2026-0908","− 216 €","Intervention non réalisée, annulation tardive","emis"],
+    ["AV-2026-0030","perrin","FA-2026-0903","− 81 €","Erreur de tarif horaire appliqué","emis"],
+    ["AV-2026-0029","abitbol","FA-2026-0821","− 405 €","Hospitalisation, interventions suspendues","emis"],
+    ["AV-2026-0028","szabo","FA-2026-0818","− 135 €","Geste commercial après réclamation","emis"]
+  ].map(([ref,id,fa,m,mot,stt])=>[
+    `<span style="color:var(--ink-3)">${ref}</span>`,
+    famCell(id),
+    `<span class="muted">${fa}</span>`,
+    `<span style="font-weight:600; color:var(--danger)">${m}</span>`,
+    `<span class="muted">${mot}</span>`,
+    `<span class="tag ok">Émis</span>`
+  ])
+},
+
+factsepa: {
+  note:"Mandat signé par le bénéficiaire, conservé pendant toute la durée de la prise en charge et 13 mois après le dernier prélèvement.",
+  action:"Créer un mandat",
+  min:940,
+  cols:[[24,"Bénéficiaire"],[18,"Référence unique"],[14,"Signé le"],[14,"Type"],[16,"Dernier prélèvement"],[14,"Statut"]],
+  rows:()=>FAMIDS.filter(id=>REGL[id] === "Prélèvement").map((id,k)=>[
+    famCell(id),
+    `<span style="color:var(--ink-3)">RUM-NA-${String(k+101).padStart(4,"0")}</span>`,
+    `<span class="muted">${DIPC[id].effet}</span>`,
+    `<span class="muted">Récurrent</span>`,
+    `<span class="muted">08/09/2026</span>`,
+    k % 6 === 3 ? `<span class="tag warn">Coordonnées à mettre à jour</span>` : `<span class="tag ok">Actif</span>`
+  ])
+},
+
+factexo: {
+  note:"Les prestations d'aide à domicile aux publics fragiles ouvrent droit à des exonérations qu'il faut pouvoir justifier.",
+  min:900,
+  tiles:()=>[
+    ["TVA","Exonérée","article 261-7 du CGI"],
+    ["Cotisations patronales","Exonérées","publics fragiles, 12 bénéficiaires"],
+    ["Économie annuelle estimée","41 200 €","sur les charges patronales"],
+    ["Justificatifs à jour","13 / 15","2 attestations à renouveler",true]
+  ],
+  cols:[[24,"Bénéficiaire"],[16,"Motif"],[20,"Justificatif"],[15,"Obtenu le"],[13,"Échéance"],[12,"Statut"]],
+  rows:()=>FAMIDS.map((id,k)=>{
+    const motif = FICHE[id].age >= 85 ? "Plus de 85 ans" : k % 3 === 0 ? "Bénéficiaire de l'APA" : k % 3 === 1 ? "GIR 1 à 4" : "Plus de 70 ans";
+    const expire = k % 7 === 5;
+    return [
+      famCell(id),
+      `<span class="muted">${motif}</span>`,
+      `<span class="muted">${k % 2 ? "Notification APA du département" : "Attestation sur l'honneur"}</span>`,
+      `<span style="color:var(--ink-3)">${DIPC[id].effet}</span>`,
+      `<span class="muted">${DIPC[id].revision}</span>`,
+      expire ? `<span class="tag warn">À renouveler</span>` : `<span class="tag ok">Valide</span>`
+    ];
+  })
+},
+
+factind: {
+  note:"Indicateurs suivis mensuellement pour piloter la facturation et la trésorerie.",
+  min:900,
+  tiles:()=>[
+    ["Chiffre d'affaires","31 614 €","+ 4 % sur un mois"],
+    ["Taux de recouvrement","88 %","à 30 jours"],
+    ["Délai moyen de paiement","34 j","21 j en direct, 67 j sur financement"],
+    ["Panier moyen","2 108 €","par famille et par mois"]
+  ],
+  cols:[[26,"Indicateur"],[16,"Septembre","right"],[16,"Août","right"],[16,"Variation","right"],[26,"Lecture"]],
+  rows:()=>[
+    ["Chiffre d'affaires facturé","31 614 €","30 402 €","+ 4 %","Croissance portée par deux nouveaux dossiers"],
+    ["Heures facturées","1 131 h","1 094 h","+ 3 %","Cohérent avec les heures pointées"],
+    ["Tarif horaire moyen","27,95 €","27,79 €","+ 0,6 %","Effet de la part de gardes de nuit"],
+    ["Part financée par un tiers","42 %","44 %","− 2 pts","Deux dossiers privés supplémentaires"],
+    ["Impayés à 30 jours","3 678 €","2 940 €","+ 25 %","Deux relances en cours"],
+    ["Avoirs émis","837 €","412 €","+ 103 %","Une hospitalisation non anticipée"]
+  ].map(r=>[
+    `<b style="font-weight:600">${r[0]}</b>`, r[1], `<span style="color:var(--ink-3)">${r[2]}</span>`,
+    `<span style="${r[3].startsWith("+") && r[0].includes("Impay") ? "color:var(--danger); font-weight:600" : ""}">${r[3]}</span>`,
+    `<span class="muted">${r[4]}</span>`
+  ])
+},
+
+/* ---------- QUALITÉ ---------- */
+qdash: {
+  note:"Indicateurs exigés par l'évaluation quinquennale et suivis dans le cadre du CPOM.",
+  min:900,
+  tiles:()=>[
+    ["Satisfaction globale","4,4 / 5","sur 38 réponses"],
+    ["Réclamations sur l'année","23","1,5 pour 1 000 heures"],
+    ["Événements indésirables","9","dont 3 graves",true],
+    ["Continuité du binôme","82 %","même intervenante d'une semaine sur l'autre"]
+  ],
+  cols:[[26,"Intervenante"],[16,"Satisfaction","right"],[16,"Réclamations","right"],[16,"Continuité","right"],[26,"Observation"]],
+  rows:()=>STAFF.map((p,k)=>{
+    const note = (4.0 + ((k * 7) % 10) / 10).toFixed(1).replace(".", ",");
+    const rec = k % 4 === 1 ? 2 : k % 4 === 3 ? 1 : 0;
+    return [
+      nom2(p),
+      `<span style="font-weight:600">${note} / 5</span>`,
+      rec ? `<span style="color:var(--warn); font-weight:600">${rec}</span>` : `<span style="color:var(--ink-3)">—</span>`,
+      `${70 + ((k * 13) % 26)} %`,
+      `<span class="muted">${rec ? "Point à faire en entretien" : "Aucune remarque"}</span>`
+    ];
+  })
+},
+
+/* ---------- COMMUNICATION ---------- */
+messagerie: {
+  note:"Une conversation par bénéficiaire, ouverte entre l'agence, la famille et les intervenantes du binôme.",
+  action:"Nouveau message",
+  min:900,
+  cols:[[24,"Conversation"],[16,"Dernier message"],[38,"Extrait"],[12,"Participants","right"],[10,"État"]],
+  rows:()=>[
+    ["lecomte","Il y a 12 min","Hélène Lecomte : « Est-ce qu'on peut décaler le passage du mardi à 8 h 30 ? »",4,"non"],
+    ["roussel","Il y a 1 h","Marie Roussel : « Merci d'avoir prévenu si vite pour la chute. »",3,"lu"],
+    ["delaunay","Il y a 3 h","Agence : « Rendez-vous confirmé avec le Dr Lemoine vendredi 14 h. »",4,"lu"],
+    ["abitbol","Hier","David Abitbol : « Mon père rentre de l'hôpital lundi. »",3,"non"],
+    ["nguyen","Hier","Agence : « Le plan d'aide révisé vous a été envoyé par courriel. »",2,"lu"],
+    ["farrugia","Il y a 2 j","Jean Farrugia : « Très content de Rosa, merci. »",3,"lu"]
+  ].map(([id,q,ex,n,et])=>[
+    famCell(id),
+    `<span style="color:var(--ink-3)">${q}</span>`,
+    `<span class="muted">${ex}</span>`,
+    String(n),
+    et === "non" ? `<span class="tag danger">Non lu</span>` : `<span class="tag ok">Lu</span>`
+  ])
+},
+
+notifications: {
+  note:"Réglages des alertes envoyées à l'agence, aux intervenantes et aux familles.",
+  min:900,
+  cols:[[30,"Événement"],[18,"Agence"],[18,"Intervenante"],[18,"Famille"],[16,"Canal"]],
+  rows:()=>[
+    ["Intervention à pourvoir","Immédiat","—","—","Application"],
+    ["Retard de pointage de plus de 15 minutes","Immédiat","Rappel","—","Application et SMS"],
+    ["Absence déclarée","Immédiat","Accusé","Information","Courriel"],
+    ["Changement d'intervenante","Immédiat","Immédiat","La veille","Courriel et SMS"],
+    ["Transmission marquée comme alerte","Immédiat","—","Immédiat","Application"],
+    ["Facture émise","—","—","Le jour de l'émission","Courriel"],
+    ["Attestation fiscale disponible","—","—","Janvier","Courriel"],
+    ["Échéance de DIPC à 60 jours","Hebdomadaire","—","—","Application"]
+  ].map(r=>[
+    `<b style="font-weight:600">${r[0]}</b>`,
+    `<span class="muted">${r[1]}</span>`, `<span class="muted">${r[2]}</span>`,
+    `<span class="muted">${r[3]}</span>`, `<span class="muted">${r[4]}</span>`
+  ])
+},
+
+/* ---------- PILOTAGE ---------- */
+pjour: {
+  note:"Vendredi 25 septembre 2026 — état de la journée en temps réel.",
+  min:900,
+  tiles:()=>[
+    ["Interventions réalisées","17 / 18","94 % de couverture"],
+    ["En cours","3","actuellement au domicile"],
+    ["Alertes ouvertes","2","astreinte mobilisée",true],
+    ["Intervenantes en poste","11 / 12","1 arrêt maladie"]
+  ],
+  cols:[[22,"Intervenante"],[14,"Interventions","right"],[14,"Heures","right"],[16,"Première"],[16,"Dernière"],[18,"État"]],
+  rows:()=>STAFF.map((p,k)=>{
+    const j = VACS.filter(v=>v.day === 4 && v.staff === p.id);
+    if(!j.length) return [nom2(p), "—", "—", "—", "—", `<span class="tag warn">Absente</span>`];
+    return [
+      nom2(p), String(j.length),
+      `${r1(j.reduce((t,v)=>t+(v.e-v.s)/60,0))} h`,
+      `<span style="color:var(--ink-3)">${fmt(Math.min(...j.map(v=>v.s)))}</span>`,
+      `<span style="color:var(--ink-3)">${fmt(Math.max(...j.map(v=>v.e)))}</span>`,
+      k % 4 === 1 ? `<span class="tag">En intervention</span>` : `<span class="tag ok">Journée terminée</span>`
+    ];
+  })
+},
+
+pkpi: {
+  note:"Les dix dossiers les plus importants représentent près des deux tiers de l'activité.",
+  min:940,
+  tiles:()=>[
+    ["Heures réalisées","9 145 h","depuis janvier"],
+    ["Chiffre d'affaires","261 400 €","cumul annuel"],
+    ["Coût horaire moyen","21,40 €","charges comprises"],
+    ["Marge brute","23 %","après masse salariale"]
+  ],
+  cols:[[6,"#"],[24,"Bénéficiaire"],[10,"GIR"],[14,"Heures / mois","right"],[15,"CA mensuel","right"],[15,"Part financée","right"],[16,"Réalisation","right"]],
+  rows:()=>FAMIDS.map(id=>({id, f:factureDe(id)}))
+    .sort((a,b)=>b.f.brut - a.f.brut).slice(0,10)
+    .map((x,k)=>[
+      `<span style="color:var(--ink-3)">${k+1}</span>`,
+      famCell(x.id),
+      `<span class="tag">${FICHE[x.id].gir}</span>`,
+      `${Math.round(x.f.heures)} h`,
+      `<span style="font-weight:600">${eur(x.f.brut)}</span>`,
+      `${Math.round((PEC[x.id] || 0) * 100)} %`,
+      `${94 + (k % 6)} %`
+    ])
+},
+
+exports: {
+  note:"Exports normalisés pour la paie, la comptabilité et les financeurs publics.",
+  min:900,
+  cols:[[28,"Export"],[20,"Format"],[22,"Destinataire"],[16,"Périodicité"],[14,"Dernier export"]],
+  rows:()=>[
+    ["Variables de paie","CSV","Cabinet comptable","Mensuelle","25/09/2026"],
+    ["Écritures de vente","FEC","Cabinet comptable","Mensuelle","01/09/2026"],
+    ["Heures réalisées par bénéficiaire","CSV","Département — APA","Mensuelle","01/09/2026"],
+    ["Télégestion","ESPPADOM","Département — APA","Mensuelle","01/09/2026"],
+    ["Attestations fiscales","PDF","Bénéficiaires","Annuelle","22/01/2026"],
+    ["Bilan d'activité","XLSX","Direction","Trimestrielle","01/07/2026"],
+    ["Indicateurs qualité","XLSX","Autorité de contrôle","Annuelle","15/03/2026"]
+  ].map(r=>[
+    `<b style="font-weight:600">${r[0]}</b>`,
+    `<span class="tag">${r[1]}</span>`,
+    `<span class="muted">${r[2]}</span>`,
+    `<span class="muted">${r[3]}</span>`,
+    `<span style="color:var(--ink-3)">${r[4]}</span>`
+  ])
+},
+
+/* ---------- ADMINISTRATION ---------- */
+parametres: {
+  html:()=>`
+    <div class="panel">
+      <div class="dcard">
+        <h3>Identité de la structure</h3>
+        <div class="dgrid">
+          <div><span>Raison sociale</span><b>Nena Adom</b></div>
+          <div><span>SIRET</span><b>951 028 034 00019</b></div>
+          <div><span>Numéro de déclaration SAP</span><b>SAP 951028034</b></div>
+          <div><span>Forme d'intervention</span><b>Prestataire<small>et mandataire pour 2 dossiers</small></b></div>
+          <div><span>Convention collective</span><b>IDCC 3127<small>branche de l'aide à domicile</small></b></div>
+          <div><span>Adresse</span><b>Paris<small>15 familles suivies</small></b></div>
+        </div>
+      </div>
+      <div class="dcard">
+        <h3>Règles d'exploitation</h3>
+        <div class="dgrid">
+          <div><span>Repos quotidien</span><b>11 heures</b></div>
+          <div><span>Amplitude maximale</span><b>13 heures</b></div>
+          <div><span>Majoration dimanche</span><b>25 %</b></div>
+          <div><span>Majoration jours fériés</span><b>25 %</b></div>
+          <div><span>Seuil d'alerte de pointage</span><b>15 minutes</b></div>
+          <div><span>Délai de préavis d'annulation</span><b>48 heures</b></div>
+        </div>
+      </div>
+      <div class="dcard">
+        <h3>Facturation</h3>
+        <div class="dgrid">
+          <div><span>Jour de facturation</span><b>1er du mois<small>pour le mois écoulé</small></b></div>
+          <div><span>Échéance de règlement</span><b>5 jours</b></div>
+          <div><span>Présentation SEPA</span><b>Le 8 du mois</b></div>
+          <div><span>TVA</span><b>Exonérée<small>article 261-7 du CGI</small></b></div>
+          <div><span>Format de facture</span><b>Factur-X<small>PDF avec données structurées</small></b></div>
+          <div><span>Numérotation</span><b>FA-AAAA-NNNN<small>continue et sans rupture</small></b></div>
+        </div>
+      </div>
+    </div>`
+},
+
+utilisateurs: {
+  note:"Chaque accès est nominatif ; les intervenantes utilisent l'application mobile et ne voient que leurs interventions.",
+  action:"Inviter un utilisateur",
+  min:900,
+  cols:[[26,"Utilisateur"],[20,"Rôle"],[20,"Accès"],[18,"Dernière connexion"],[16,"État"]],
+  rows:()=>[
+    ["Marie Laurent","Coordinatrice","Back-office complet","Aujourd'hui 08:12","actif"],
+    ["Awa Traoré","Responsable de secteur","Planning, dossiers, qualité","Aujourd'hui 07:40","actif"],
+    ["Cabinet Berthier","Comptable","Facturation et exports","22/09/2026","actif"],
+    ["Fatou Diallo","Intervenante","Application mobile","Aujourd'hui 09:27","actif"],
+    ["Malika Hadj","Intervenante","Application mobile","Aujourd'hui 09:41","actif"],
+    ["Sandrine Meunier","Intervenante","Application mobile","18/09/2026","suspendu"]
+  ].map(([n,r,acc,co,et])=>[
+    `<div class="pname"><div class="pid"><b>${n}</b><small>${r}</small></div></div>`,
+    `<span class="muted">${r}</span>`,
+    `<span class="muted">${acc}</span>`,
+    `<span style="color:var(--ink-3)">${co}</span>`,
+    et === "actif" ? `<span class="tag ok">Actif</span>` : `<span class="tag warn">Suspendu</span>`
+  ])
+},
+
+roles: {
+  note:"Les habilitations suivent le principe du moindre accès : on ne voit que ce dont on a besoin pour travailler.",
+  min:940,
+  cols:[[22,"Rôle"],[13,"Planning"],[13,"Dossiers"],[13,"Facturation"],[13,"Paie"],[13,"Qualité"],[13,"Paramètres"]],
+  rows:()=>[
+    ["Direction","Complet","Complet","Complet","Complet","Complet","Complet"],
+    ["Coordinatrice","Complet","Complet","Complet","Lecture","Complet","Lecture"],
+    ["Responsable de secteur","Complet","Complet","Lecture","—","Complet","—"],
+    ["Comptable","—","Lecture","Complet","Complet","—","—"],
+    ["Intervenante","Ses interventions","Consignes","—","Ses heures","Déclaration","—"],
+    ["Famille","Les passages","Son dossier","Ses factures","—","Réclamation","—"]
+  ].map(r=>[
+    `<b style="font-weight:600">${r[0]}</b>`,
+    ...r.slice(1).map(v=> v === "—"
+      ? `<span style="color:var(--line-strong)">—</span>`
+      : v === "Complet" ? `<span class="tag ok">Complet</span>`
+      : `<span class="tag">${v}</span>`)
+  ])
+}
+
+};
+
+Object.entries(SCREENS).forEach(([k,c])=> buildScreen(k,c));
+
 renderDashboard();
 go("dashboard");
 </script>
